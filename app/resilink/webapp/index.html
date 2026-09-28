@@ -1138,6 +1138,7 @@
 
       // Live Disruption Simulation Popup Modal
       const [showDisruptionPopup, setShowDisruptionPopup] = useState(false);
+      const [kpiDetailModal, setKpiDetailModal] = useState(null); // 'suppliers' | 'plants' | 'warehouses' | 'inventory' | 'orders' | 'shipments'
       const [disruptionEvent, setDisruptionEvent] = useState({
         title: 'Port Congestion detected at Chennai Port',
         location: 'Chennai Port Container Terminal (India)',
@@ -2360,16 +2361,16 @@
                 {[
                   ...(companyMode === 'NEW' ? [{
                     id: 'build',
-                    label: 'Network Design',
+                    label: '1. Build (Network Design)',
                     icon: Icons.Build,
-                    badge: `Step ${buildStep}/7`
+                    badge: `Step ${buildStep}/6`
                   }] : []),
-                  { id: 'overview', label: 'Overview', icon: Icons.Overview },
-                  { id: 'network', label: 'Network Topology', icon: Icons.Network },
-                  { id: 'disruptions', label: 'Disruptions & Agents', icon: Icons.Disruption, badge: isRecovered ? 'Resolved' : '1 Alert', badgeAlert: !isRecovered },
-                  { id: 'scenarios', label: 'Scenario Matrix', icon: Icons.Scenarios },
-                  { id: 'analytics', label: 'Resilience Memory', icon: Icons.Analytics },
-                  { id: 'sap_schema', label: 'CAP CDS Schema', icon: Icons.Code }
+                  { id: 'overview', label: 'Overview (Control Tower)', icon: Icons.Overview },
+                  { id: 'network', label: 'Understand (Topology)', icon: Icons.Network },
+                  { id: 'disruptions', label: 'Sense (Disruptions)', icon: Icons.Disruption, badge: isRecovered ? 'Resolved' : '1 Alert', badgeAlert: !isRecovered },
+                  { id: 'scenarios', label: 'Decide (Scenarios)', icon: Icons.Scenarios },
+                  { id: 'analytics', label: 'Learn (Memory & KPI)', icon: Icons.Analytics },
+                  { id: 'sap_schema', label: 'Architecture (CAP CDS)', icon: Icons.Code }
                 ].map(item => {
                   const isActive = activeTab === item.id;
                   const Icon = item.icon;
@@ -3334,12 +3335,19 @@
                       <div className="flex items-center justify-between flex-wrap gap-3 pt-3 border-t border-red-500/20">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setActiveTab('disruptions')}
-                            className="px-4 py-2 rounded-xl theme-bg-card border theme-border hover:border-[#0A6ED1] text-xs font-semibold theme-text-main flex items-center gap-1.5 transition cursor-pointer shadow-sm"
-                          >
-                            <Icons.Disruption />
-                            <span>Launch Multi-Agent Workbench</span>
-                          </button>
+    onClick={() => setShowDisruptionPopup(true)}
+    className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-red-600/30"
+  >
+    <Icons.Disruption />
+    <span>⚡ View Port Congestion Alert</span>
+  </button>
+  <button
+    onClick={() => setActiveTab('disruptions')}
+    className="px-4 py-2 rounded-xl theme-bg-card border theme-border hover:border-[#0A6ED1] text-xs font-semibold theme-text-main flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+  >
+    <Icons.Network />
+    <span>Analyse Disruption Mesh</span>
+  </button>
                           <button
                             onClick={() => setActiveTab('scenarios')}
                             className="px-4 py-2 rounded-xl theme-bg-card border theme-border hover:border-[#0A6ED1] text-xs font-semibold theme-text-main flex items-center gap-1.5 transition cursor-pointer shadow-sm"
@@ -3432,7 +3440,11 @@
                   <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
                     
                     {/* Card 1: Total Suppliers */}
-                    <div className="theme-bg-card border theme-border rounded-xl p-4 theme-card-shadow flex flex-col justify-between">
+                    <div 
+                      onClick={() => setKpiDetailModal('suppliers')}
+                      className="theme-bg-card border theme-border hover:border-[#0A6ED1] rounded-xl p-4 theme-card-shadow flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-0.5 group"
+                      title="Click to view Supplier Details"
+                    >
                       <div className="flex items-center justify-between">
                         <span className="p-2 rounded-lg bg-blue-500/10 text-[#0A6ED1]"><Icons.Factory /></span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-[#107E3E]">Active</span>
@@ -3441,13 +3453,18 @@
                         <div className="text-2xl font-bold font-mono theme-text-main">24</div>
                         <div className="text-xs font-medium theme-text-muted">Total Suppliers</div>
                       </div>
-                      <div className="text-[11px] font-mono text-[#0A6ED1]">
-                        ↑ +2 this quarter
+                      <div className="text-[11px] font-mono text-[#0A6ED1] flex items-center justify-between pt-1 border-t theme-border mt-1">
+                        <span>↑ +2 this qtr</span>
+                        <span className="font-bold group-hover:translate-x-0.5 transition-transform">Details ➔</span>
                       </div>
                     </div>
 
                     {/* Card 2: Active Plants */}
-                    <div className="theme-bg-card border theme-border rounded-xl p-4 theme-card-shadow flex flex-col justify-between">
+                    <div 
+                      onClick={() => setKpiDetailModal('plants')}
+                      className="theme-bg-card border theme-border hover:border-[#7C4DFF] rounded-xl p-4 theme-card-shadow flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-0.5 group"
+                      title="Click to view Plant Details"
+                    >
                       <div className="flex items-center justify-between">
                         <span className="p-2 rounded-lg bg-purple-500/10 text-[#7C4DFF]"><Icons.Cpu /></span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-[#107E3E]">Optimal</span>
@@ -3456,13 +3473,18 @@
                         <div className="text-2xl font-bold font-mono theme-text-main">6</div>
                         <div className="text-xs font-medium theme-text-muted">Active Plants</div>
                       </div>
-                      <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
-                        94.2% Capacity
+                      <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center justify-between pt-1 border-t theme-border mt-1">
+                        <span>94.2% Cap</span>
+                        <span className="font-bold text-[#7C4DFF] group-hover:translate-x-0.5 transition-transform">Details ➔</span>
                       </div>
                     </div>
 
                     {/* Card 3: Warehouse Network */}
-                    <div className="theme-bg-card border theme-border rounded-xl p-4 theme-card-shadow flex flex-col justify-between">
+                    <div 
+                      onClick={() => setKpiDetailModal('warehouses')}
+                      className="theme-bg-card border theme-border hover:border-[#107E3E] rounded-xl p-4 theme-card-shadow flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-0.5 group"
+                      title="Click to view Warehouse Details"
+                    >
                       <div className="flex items-center justify-between">
                         <span className="p-2 rounded-lg bg-emerald-500/10 text-[#107E3E]"><Icons.Database /></span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/10 text-[#0A6ED1]">Connected</span>
@@ -3471,13 +3493,18 @@
                         <div className="text-2xl font-bold font-mono theme-text-main">8</div>
                         <div className="text-xs font-medium theme-text-muted">Warehouse Network</div>
                       </div>
-                      <div className="text-[11px] font-mono text-[#107E3E]">
-                        100% Online
+                      <div className="text-[11px] font-mono text-[#107E3E] flex items-center justify-between pt-1 border-t theme-border mt-1">
+                        <span>100% Online</span>
+                        <span className="font-bold group-hover:translate-x-0.5 transition-transform">Details ➔</span>
                       </div>
                     </div>
 
                     {/* Card 4: Inventory Availability */}
-                    <div className="theme-bg-card border theme-border rounded-xl p-4 theme-card-shadow flex flex-col justify-between">
+                    <div 
+                      onClick={() => setKpiDetailModal('inventory')}
+                      className="theme-bg-card border theme-border hover:border-cyan-500 rounded-xl p-4 theme-card-shadow flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-0.5 group"
+                      title="Click to view Inventory Details"
+                    >
                       <div className="flex items-center justify-between">
                         <span className="p-2 rounded-lg bg-cyan-500/10 text-cyan-600"><Icons.Shield /></span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-[#107E3E]">Available</span>
@@ -3486,13 +3513,18 @@
                         <div className="text-2xl font-bold font-mono theme-text-main">92%</div>
                         <div className="text-xs font-medium theme-text-muted">Inventory Availability</div>
                       </div>
-                      <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
-                        ↑ +3.4% vs buffer
+                      <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center justify-between pt-1 border-t theme-border mt-1">
+                        <span>↑ +3.4% buffer</span>
+                        <span className="font-bold text-cyan-600 group-hover:translate-x-0.5 transition-transform">Details ➔</span>
                       </div>
                     </div>
 
                     {/* Card 5: Active Orders */}
-                    <div className="theme-bg-card border theme-border rounded-xl p-4 theme-card-shadow flex flex-col justify-between">
+                    <div 
+                      onClick={() => setKpiDetailModal('orders')}
+                      className="theme-bg-card border theme-border hover:border-amber-500 rounded-xl p-4 theme-card-shadow flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-0.5 group"
+                      title="Click to view Order Details"
+                    >
                       <div className="flex items-center justify-between">
                         <span className="p-2 rounded-lg bg-amber-500/10 text-amber-600"><Icons.CheckCircle2 /></span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-600">In Progress</span>
@@ -3501,13 +3533,18 @@
                         <div className="text-2xl font-bold font-mono theme-text-main">1,240</div>
                         <div className="text-xs font-medium theme-text-muted">Active Orders</div>
                       </div>
-                      <div className="text-[11px] font-mono text-amber-600 dark:text-amber-400">
-                        98.1% on track
+                      <div className="text-[11px] font-mono text-amber-600 dark:text-amber-400 flex items-center justify-between pt-1 border-t theme-border mt-1">
+                        <span>98.1% on track</span>
+                        <span className="font-bold text-amber-600 group-hover:translate-x-0.5 transition-transform">Details ➔</span>
                       </div>
                     </div>
 
                     {/* Card 6: Shipment Status */}
-                    <div className="theme-bg-card border theme-border rounded-xl p-4 theme-card-shadow flex flex-col justify-between">
+                    <div 
+                      onClick={() => setKpiDetailModal('shipments')}
+                      className="theme-bg-card border theme-border hover:border-[#0A6ED1] rounded-xl p-4 theme-card-shadow flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-0.5 group"
+                      title="Click to view Shipment Details"
+                    >
                       <div className="flex items-center justify-between">
                         <span className="p-2 rounded-lg bg-blue-500/10 text-[#0A6ED1]"><Icons.Globe /></span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-[#107E3E]">On-Time</span>
@@ -3516,8 +3553,9 @@
                         <div className="text-2xl font-bold font-mono theme-text-main">96%</div>
                         <div className="text-xs font-medium theme-text-muted">Shipment Status</div>
                       </div>
-                      <div className="text-[11px] font-mono text-[#107E3E]">
-                        ↑ +1.8% vs SLA
+                      <div className="text-[11px] font-mono text-[#107E3E] flex items-center justify-between pt-1 border-t theme-border mt-1">
+                        <span>↑ +1.8% vs SLA</span>
+                        <span className="font-bold text-[#0A6ED1] group-hover:translate-x-0.5 transition-transform">Details ➔</span>
                       </div>
                     </div>
 
@@ -5025,26 +5063,34 @@ entity Scenarios {
                     </button>
                   </div>
 
-                  <div className="p-4 theme-bg-elevated rounded-xl border theme-border space-y-2 text-xs font-mono">
-                    <div className="flex justify-between">
-                      <span className="theme-text-muted">Scenario Code:</span>
-                      <span className="theme-text-main font-bold">SCN-004 (RESILINK Hybrid Plan)</span>
+                  <div className="p-4 theme-bg-elevated rounded-xl border theme-border space-y-3 text-xs">
+                    <div className="space-y-1 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                      <div className="text-[10px] font-mono font-bold text-[#107E3E] uppercase">★ AI Recommendation:</div>
+                      <div className="font-bold theme-text-main text-sm">Shift 1,000 units Plant A → Plant B with Express Air Freight (SCN-004)</div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="theme-text-muted">Target Production Plant:</span>
-                      <span className="text-cyan-600 dark:text-cyan-400 font-bold">Plant B (Pune, India) — 1,000 Units</span>
+                    <div className="space-y-1 p-2.5 rounded-lg theme-bg-card border theme-border">
+                      <div className="text-[10px] font-mono font-bold text-[#0A6ED1] uppercase">Reason for Recommendation:</div>
+                      <div className="theme-text-muted leading-relaxed">
+                        Alleviates 14-day Chennai port delay, prevents Plant Munich line shutdown within 72 hours, preserves 98.5% customer SLA, and eliminates $1.42M penalty risk with pre-approved emergency air freight.
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="theme-text-muted">Expedited Logistics:</span>
-                      <span className="theme-text-main">Lufthansa Cargo Flight LH-8422 (BOM-DXB)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="theme-text-muted">Financial Authorization:</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">$52,000 (Within $100k Limit)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="theme-text-muted">Projected Customer SLA:</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">96% Preserved ($1.42M Revenue Protected)</span>
+                    <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
+                      <div className="p-2 rounded-lg theme-bg-card border theme-border">
+                        <span className="text-muted block text-[10px]">RESPONSIBLE AGENT</span>
+                        <strong className="text-purple-600 dark:text-purple-400">Autonomous Scenario Agent</strong>
+                      </div>
+                      <div className="p-2 rounded-lg theme-bg-card border theme-border">
+                        <span className="text-muted block text-[10px]">SUPERVISING AGENT</span>
+                        <strong className="text-emerald-600 dark:text-emerald-400">Compliance Safeguard Agent</strong>
+                      </div>
+                      <div className="p-2 rounded-lg theme-bg-card border theme-border">
+                        <span className="text-muted block text-[10px]">EXECUTION COST</span>
+                        <strong className="text-emerald-600 dark:text-emerald-400">$52,000 (Authorized)</strong>
+                      </div>
+                      <div className="p-2 rounded-lg theme-bg-card border theme-border">
+                        <span className="text-muted block text-[10px]">RECOVERY TIME</span>
+                        <strong className="text-[#0A6ED1]">2 Days (Fast-Track)</strong>
+                      </div>
                     </div>
                   </div>
 
@@ -5070,7 +5116,7 @@ entity Scenarios {
                       ) : (
                         <>
                           <Icons.Zap />
-                          <span>Authorize & Commit via SAP CAP</span>
+                          <span>Approve / Authorize & Commit via SAP CAP (Execute Adaptation)</span>
                         </>
                       )}
                     </button>
@@ -5439,6 +5485,192 @@ entity Scenarios {
             {/* ========================================================= */}
             {/* NODE DETAILS INSPECTION DRAWER (PAGE 3 REQUIREMENT 2)     */}
             {/* ========================================================= */}
+            
+            {/* ========================================================= */}
+            {/* KPI DETAIL VIEW MODAL (CLICK NAVIGATION ON KPI CARDS)     */}
+            {/* ========================================================= */}
+            {kpiDetailModal && (
+              <div 
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fadeIn"
+                style={{ background: 'var(--modal-overlay)' }}
+                onClick={() => setKpiDetailModal(null)}
+              >
+                <div 
+                  className="theme-bg-card border-2 theme-border rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between border-b theme-border pb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#0A6ED1] flex items-center justify-center font-bold">
+                        {kpiDetailModal === 'suppliers' && <Icons.Factory />}
+                        {kpiDetailModal === 'plants' && <Icons.Cpu />}
+                        {kpiDetailModal === 'warehouses' && <Icons.Database />}
+                        {kpiDetailModal === 'inventory' && <Icons.Shield />}
+                        {kpiDetailModal === 'orders' && <Icons.CheckCircle2 />}
+                        {kpiDetailModal === 'shipments' && <Icons.Globe />}
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold theme-text-main">
+                          {kpiDetailModal === 'suppliers' && 'Supplier Network Details (24 Active Suppliers)'}
+                          {kpiDetailModal === 'plants' && 'Operational Plants (6 Assembly Facilities)'}
+                          {kpiDetailModal === 'warehouses' && 'Warehouse Network & Storage Buffers (8 Connected Hubs)'}
+                          {kpiDetailModal === 'inventory' && 'Inventory Availability & Safety Stocks (92% Purity)'}
+                          {kpiDetailModal === 'orders' && 'Active Customer Orders (1,240 Total Demand)'}
+                          {kpiDetailModal === 'shipments' && 'Global Freight & Shipment Tracking (96% On-Time SLA)'}
+                        </h3>
+                        <p className="text-xs theme-text-muted">
+                          Detailed multi-tier operational telemetry from SAP S/4HANA & Logistics Control Tower
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setKpiDetailModal(null)}
+                      className="p-1 rounded-lg hover:theme-bg-elevated theme-text-muted hover:theme-text-main text-xs font-mono"
+                    >
+                      ✕ Close
+                    </button>
+                  </div>
+
+                  <div className="overflow-y-auto space-y-3 flex-1 pr-1">
+                    {/* SUPPLIERS DETAIL VIEW */}
+                    {kpiDetailModal === 'suppliers' && (
+                      <div className="space-y-3 text-xs">
+                        {[
+                          { name: 'Bharat Cell Technologies', loc: 'Chennai Port, India', cap: '40% (Disrupted by Port Congestion)', rel: '94.8%', risk: 'High (87/100)', status: 'DISRUPTED' },
+                          { name: 'Katowice Electro Component Hub', loc: 'Katowice, Poland', cap: '100% Nominal (120k u/yr)', rel: '98.2%', risk: 'Low (18/100)', status: 'OPERATIONAL' },
+                          { name: 'Taoyuan Precision Cathodes', loc: 'Taoyuan, Taiwan', cap: '100% Automotive Grade', rel: '97.8%', risk: 'Low (22/100)', status: 'OPERATIONAL' },
+                          { name: 'Shenzhen Advanced Silicon', loc: 'Shenzhen, China', cap: '95% Standard Run', rel: '96.2%', risk: 'Med (35/100)', status: 'OPERATIONAL' }
+                        ].map((s, idx) => (
+                          <div key={idx} className="p-3.5 rounded-xl border theme-border theme-bg-elevated flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                              <div className="font-bold theme-text-main text-sm">{s.name}</div>
+                              <div className="text-[11px] theme-text-muted font-mono">{s.loc}</div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3 font-mono text-[11px]">
+                              <div><span className="text-muted block text-[10px]">CAPACITY</span><strong className={s.status === 'DISRUPTED' && !isRecovered ? 'text-red-500' : 'text-emerald-500'}>{isRecovered && s.status === 'DISRUPTED' ? '100%' : s.cap}</strong></div>
+                              <div><span className="text-muted block text-[10px]">RELIABILITY</span><strong>{s.rel}</strong></div>
+                              <div><span className="text-muted block text-[10px]">RISK</span><strong className={s.status === 'DISRUPTED' && !isRecovered ? 'text-red-500' : 'text-emerald-500'}>{isRecovered && s.status === 'DISRUPTED' ? 'Low (14/100)' : s.risk}</strong></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* PLANTS DETAIL VIEW */}
+                    {kpiDetailModal === 'plants' && (
+                      <div className="space-y-3 text-xs">
+                        {[
+                          { loc: 'Pune Battery Facility (Plant A), India', cap: '10,000 units/mo', util: '94% (High Line Load)', status: isRecovered ? 'STABILIZED' : 'BOTTLENECKED', risk: '85/100' },
+                          { loc: 'Wroclaw Pack Plant (Plant B), Poland', cap: '15,000 units/mo', util: isRecovered ? '88% Surging (+1,000 u)' : '48% (Reserve Capacity)', status: isRecovered ? 'SURGE ACTIVE' : 'BUFFER AVAILABLE', risk: '12/100' },
+                          { loc: 'Munich Gigafactory 1, Germany', cap: '25,000 units/mo', util: '91% (Nominal Run)', status: 'OPERATIONAL', risk: '15/100' },
+                          { loc: 'Bratislava Assembly Hub, Slovakia', cap: '12,000 units/mo', util: '86% (Balanced Run)', status: 'OPERATIONAL', risk: '18/100' }
+                        ].map((p, idx) => (
+                          <div key={idx} className="p-3.5 rounded-xl border theme-border theme-bg-elevated flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                              <div className="font-bold theme-text-main text-sm">{p.loc}</div>
+                              <div className="text-[11px] font-mono text-muted">Assembly & Module Packaging</div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3 font-mono text-[11px]">
+                              <div><span className="text-muted block text-[10px]">CAPACITY</span><strong>{p.cap}</strong></div>
+                              <div><span className="text-muted block text-[10px]">UTILIZATION</span><strong className="text-blue-500">{p.util}</strong></div>
+                              <div><span className="text-muted block text-[10px]">STATUS</span><span className={'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (p.status.includes('BOTTLENECKED') ? 'bg-amber-500/20 text-amber-600' : 'bg-emerald-500/20 text-emerald-600')}>{p.status}</span></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* WAREHOUSES DETAIL VIEW */}
+                    {kpiDetailModal === 'warehouses' && (
+                      <div className="space-y-3 text-xs">
+                        {[
+                          { name: 'Central European Distribution Hub (WH-ROT)', loc: 'Rotterdam, Netherlands', storage: '18,000 Pallets', inv: '5,400 units safety stock', status: '100% Operational' },
+                          { name: 'Middle East Cross-Dock Center (WH-UAE)', loc: 'Dubai Logistics City, UAE', storage: '12,000 Pallets', inv: '3,200 units buffer', status: 'Operational' },
+                          { name: 'Nhava Sheva Consolidation Buffer', loc: 'Mumbai / Nhava Sheva, India', storage: '8,000 Pallets', inv: '2,100 units buffer', status: 'Operational' },
+                          { name: 'Frankfurt Air Cargo Terminal Hub', loc: 'Frankfurt Airport, Germany', storage: '10,000 Pallets', inv: '4,000 units express buffer', status: 'Operational' }
+                        ].map((w, idx) => (
+                          <div key={idx} className="p-3.5 rounded-xl border theme-border theme-bg-elevated flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                              <div className="font-bold theme-text-main text-sm">{w.name}</div>
+                              <div className="text-[11px] theme-text-muted font-mono">{w.loc}</div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 font-mono text-[11px]">
+                              <div><span className="text-muted block text-[10px]">STORAGE CAPACITY</span><strong>{w.storage}</strong></div>
+                              <div><span className="text-muted block text-[10px]">INVENTORY BUFFER</span><strong className="text-emerald-500">{w.inv}</strong></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* INVENTORY DETAIL VIEW */}
+                    {kpiDetailModal === 'inventory' && (
+                      <div className="space-y-3 text-xs">
+                        <div className="grid grid-cols-3 gap-3 p-3.5 rounded-xl border theme-border theme-bg-card font-mono text-center">
+                          <div><span className="text-muted block text-[10px]">TOTAL BUFFER</span><strong className="text-base text-emerald-500">18,400 u</strong></div>
+                          <div><span className="text-muted block text-[10px]">AVAILABILITY</span><strong className="text-base text-[#0A6ED1]">92.4%</strong></div>
+                          <div><span className="text-muted block text-[10px]">SLA MARGIN</span><strong className="text-base text-purple-500">+21.0% Safe</strong></div>
+                        </div>
+                        <div className="p-3.5 rounded-xl border theme-border theme-bg-elevated space-y-2">
+                          <div className="font-bold theme-text-main">Buffer Stock Breakdown by Material:</div>
+                          <div className="space-y-1.5 font-mono text-[11px]">
+                            <div className="flex justify-between"><span>Lithium Cathode Cells (NMC-811):</span><strong>5,400 units (Rotterdam)</strong></div>
+                            <div className="flex justify-between"><span>Automotive Microcontrollers (MC-88):</span><strong>4,200 units (Frankfurt)</strong></div>
+                            <div className="flex justify-between"><span>Power Inverter Modules (SiC):</span><strong>3,600 units (Dubai)</strong></div>
+                            <div className="flex justify-between"><span>Pre-Assembled EV Battery Packs:</span><strong>5,200 units (Munich)</strong></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ORDERS DETAIL VIEW */}
+                    {kpiDetailModal === 'orders' && (
+                      <div className="space-y-3 text-xs">
+                        <div className="grid grid-cols-3 gap-3 text-center font-mono">
+                          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30"><span className="text-muted block text-[10px]">COMPLETED</span><strong className="text-lg text-emerald-500">1,120</strong><span className="text-[10px] block theme-text-muted">90.3%</span></div>
+                          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30"><span className="text-muted block text-[10px]">PENDING</span><strong className="text-lg text-amber-500">95</strong><span className="text-[10px] block theme-text-muted">7.7%</span></div>
+                          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30"><span className="text-muted block text-[10px]">DELAYED</span><strong className={'text-lg ' + (isRecovered ? 'text-emerald-500' : 'text-red-500')}>{isRecovered ? 0 : 25}</strong><span className="text-[10px] block theme-text-muted">{isRecovered ? '0.0%' : '2.0%'}</span></div>
+                        </div>
+                        <div className="p-3.5 rounded-xl border theme-border theme-bg-elevated space-y-1 font-mono text-[11px]">
+                          <div className="font-bold theme-text-main">OEM Customer Account Status:</div>
+                          <div className="flex justify-between"><span>BMW Group (Munich Plant):</span><span className="text-emerald-500">✓ On Schedule (98.2% SLA)</span></div>
+                          <div className="flex justify-between"><span>Mercedes-Benz AG (Stuttgart Plant):</span><span className="text-emerald-500">✓ On Schedule (97.5% SLA)</span></div>
+                          <div className="flex justify-between"><span>Audi Sport (Ingolstadt Facility):</span><span className={isRecovered ? 'text-emerald-500' : 'text-amber-500'}>{isRecovered ? '✓ Protected via Scenario SCN-004' : '⚠ 12 Orders at Risk (Disruption Impact)'}</span></div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* SHIPMENTS DETAIL VIEW */}
+                    {kpiDetailModal === 'shipments' && (
+                      <div className="space-y-3 text-xs">
+                        <div className="grid grid-cols-3 gap-3 text-center font-mono">
+                          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30"><span className="text-muted block text-[10px]">DELIVERED</span><strong className="text-lg text-emerald-500">156</strong><span className="text-[10px] block theme-text-muted">78.0%</span></div>
+                          <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30"><span className="text-muted block text-[10px]">IN TRANSIT</span><strong className="text-lg text-[#0A6ED1]">36</strong><span className="text-[10px] block theme-text-muted">18.0%</span></div>
+                          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30"><span className="text-muted block text-[10px]">DELAYED</span><strong className={'text-lg ' + (isRecovered ? 'text-emerald-500' : 'text-red-500')}>{isRecovered ? 0 : 8}</strong><span className="text-[10px] block theme-text-muted">{isRecovered ? '0.0%' : '4.0%'}</span></div>
+                        </div>
+                        <div className="p-3.5 rounded-xl border theme-border theme-bg-elevated space-y-1 font-mono text-[11px]">
+                          <div className="font-bold theme-text-main">Active Multimodal Freight Corridors:</div>
+                          <div className="flex justify-between"><span>Route 1 (Chennai → Munich Ocean Route):</span><span className={isRecovered ? 'text-emerald-500' : 'text-red-500'}>{isRecovered ? 'Rerouted to Express Air' : '⚠ Port Congestion Dwell (+14d)'}</span></div>
+                          <div className="flex justify-between"><span>Route 2 (Katowice → Stuttgart Rail Express):</span><span className="text-emerald-500">✓ On Schedule (3.5 Days Transit)</span></div>
+                          <div className="flex justify-between"><span>Route 3 (Lufthansa Cargo Flight LH-8422):</span><span className="text-emerald-500 font-bold">{isRecovered ? '★ Active Surge Delivery (2.0 Days ETA)' : 'Standby Express Corridor'}</span></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t theme-border flex items-center justify-between">
+                    <span className="text-[10px] font-mono theme-text-muted">SAP S/4HANA TM Telemetry • Updated Live</span>
+                    <button
+                      onClick={() => setKpiDetailModal(null)}
+                      className="px-4 py-2 rounded-xl bg-[#0A6ED1] text-white font-bold text-xs hover:brightness-110 cursor-pointer"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {inspectedEntity && (
               <div 
                 className="fixed inset-0 z-50 flex items-center justify-end p-4 backdrop-blur-sm animate-fadeIn"
