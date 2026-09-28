@@ -1725,7 +1725,88 @@
       const [selectedWarehouseOption, setSelectedWarehouseOption] = useState('WH-OPT-A');
       const [selectedRouteOption, setSelectedRouteOption] = useState('ROUTE-OPT-2');
 
-      const activeOrg = (companyProfile && orgRegistry && orgRegistry[companyProfile.code]) || (orgRegistry && orgRegistry['COMP-DE-900']) || ORGANIZATION_REGISTRY['COMP-DE-900'];
+            // =====================================================================
+      // 1. SINGLE SOURCE OF TRUTH: organisationNetwork DATA LAYER
+      // =====================================================================
+      const organisationNetwork = useMemo(() => {
+        const code = (companyProfile && companyProfile.code) || 'COMP-DE-900';
+        const base = ORGANIZATION_REGISTRY[code] || ORGANIZATION_REGISTRY['COMP-DE-900'];
+        let stored = {};
+        try {
+          const raw = localStorage.getItem('resilink_org_registry');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed[code]) stored = parsed[code];
+          }
+        } catch (e) {}
+
+        // Invariant: Never allow empty or truncated lists from stale localStorage!
+        const suppliers = (stored.supplierList && stored.supplierList.length >= 3) ? stored.supplierList : base.supplierList;
+        const plants = (stored.plantList && stored.plantList.length >= 2) ? stored.plantList : base.plantList;
+        const warehouses = (stored.warehouseList && stored.warehouseList.length >= 2) ? stored.warehouseList : base.warehouseList;
+        const customers = (stored.customerList && stored.customerList.length >= 2) ? stored.customerList : base.customerList;
+
+        const dynamicKpis = {
+          ...base.kpis,
+          ...(stored.kpis || {}),
+          suppliers: {
+            ...(base.kpis && base.kpis.suppliers),
+            count: String(suppliers ? suppliers.length : (base.kpis ? base.kpis.suppliers.count : '24')),
+            status: (base.kpis && base.kpis.suppliers && base.kpis.suppliers.status) || 'Active',
+            trend: (base.kpis && base.kpis.suppliers && base.kpis.suppliers.trend) || '↑ +2 this qtr'
+          },
+          plants: {
+            ...(base.kpis && base.kpis.plants),
+            count: String(plants ? plants.length : (base.kpis ? base.kpis.plants.count : '6')),
+            status: (base.kpis && base.kpis.plants && base.kpis.plants.status) || 'Optimal',
+            cap: (base.kpis && base.kpis.plants && base.kpis.plants.cap) || '94.2% Cap'
+          },
+          warehouses: {
+            ...(base.kpis && base.kpis.warehouses),
+            count: String(warehouses ? warehouses.length : (base.kpis ? base.kpis.warehouses.count : '8')),
+            status: (base.kpis && base.kpis.warehouses && base.kpis.warehouses.status) || 'Connected',
+            stock: (base.kpis && base.kpis.warehouses && base.kpis.warehouses.stock) || '100% Online'
+          },
+          inventory: {
+            ...(base.kpis && base.kpis.inventory),
+            count: isRecovered ? '98%' : ((base.kpis && base.kpis.inventory && base.kpis.inventory.count) || '92%'),
+            status: isRecovered ? 'Optimal' : ((base.kpis && base.kpis.inventory && base.kpis.inventory.status) || 'Disrupted')
+          },
+          orders: {
+            ...(base.kpis && base.kpis.orders),
+            count: (base.ordersList && base.ordersList.length) ? base.ordersList.length.toLocaleString() : ((base.kpis && base.kpis.orders && base.kpis.orders.count) || '1,240')
+          },
+          shipments: {
+            ...(base.kpis && base.kpis.shipments),
+            count: isRecovered ? '99%' : ((base.kpis && base.kpis.shipments && base.kpis.shipments.count) || '96%')
+          }
+        };
+
+        return {
+          ...base,
+          ...stored,
+          code,
+          name: stored.name || base.name,
+          city: stored.city || base.city,
+          industry: stored.industry || base.industry,
+          resilienceScore: (isRecovered ? 96 : (stored.resilienceScore || base.resilienceScore || 94)),
+          kpis: dynamicKpis,
+          suppliers: suppliers || [],
+          plants: plants || [],
+          warehouses: warehouses || [],
+          customers: customers || [],
+          supplierList: suppliers || [],
+          plantList: plants || [],
+          warehouseList: warehouses || [],
+          customerList: customers || [],
+          ordersList: stored.ordersList || base.ordersList || [],
+          shipmentsList: stored.shipmentsList || base.shipmentsList || [],
+          analytics: stored.analytics || base.analytics || {}
+        };
+      }, [companyProfile, orgRegistry, isRecovered]);
+
+      const activeOrg = organisationNetwork;
+
 
       // Dynamic organisation-specific data calculations (No hardcoded metrics)
             // Unified Single Source of Truth Node List for Active Organisation
@@ -4427,7 +4508,7 @@
                       </div>
                     </div>
 
-                    {/* 4-Echelon Compact Preview Grid */}
+                    {/* 4-Echelon Compact Preview Grid (Single Source of Truth: organisationNetwork) */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                       
                       {/* Echelon 1: Suppliers */}
@@ -4435,24 +4516,34 @@
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold theme-text-main flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                            Suppliers ({activeOrg.kpis ? activeOrg.kpis.suppliers.count : '24'})
+                            Suppliers ({organisationNetwork.suppliers.length})
                           </span>
                           <button 
-                            onClick={() => setViewAllModal('suppliers')}
-                            className="text-[10px] font-bold text-[#0A6ED1] hover:underline"
+                            onClick={() => setKpiDetailModal('suppliers')}
+                            className="text-[10px] font-bold text-[#0A6ED1] hover:underline cursor-pointer"
                           >
                             View All Suppliers
                           </button>
                         </div>
                         <div className="space-y-1.5 text-[11px]">
-                          <div className="p-1.5 rounded bg-red-500/10 border border-red-500/25 flex items-center justify-between">
-                            <span className="font-semibold text-red-600 dark:text-red-400 truncate">Bharat Cell Tech (Chennai)</span>
-                            <span className="font-mono text-[9px] px-1 py-0.2 bg-red-500/20 text-red-700 dark:text-red-300 rounded font-bold">DISRUPTED</span>
-                          </div>
-                          <div className="p-1.5 rounded bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between">
-                            <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate">LG Chem Wroclaw (Standby)</span>
-                            <span className="font-mono text-[9px] px-1 py-0.2 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded font-bold">ACTIVE 100%</span>
-                          </div>
+                          {(organisationNetwork.suppliers || []).slice(0, 2).map((s, sIdx) => (
+                            <div 
+                              key={s.id || sIdx}
+                              onClick={() => { setSelectedNode(s); setInspectedEntity(s); }}
+                              className={"p-1.5 rounded flex items-center justify-between cursor-pointer transition hover:opacity-80 " + 
+                                (s.status === 'DISRUPTED' && !isRecovered ? "bg-red-500/10 border border-red-500/25" : "bg-emerald-500/10 border border-emerald-500/25")
+                              }
+                            >
+                              <span className={"font-semibold truncate " + (s.status === 'DISRUPTED' && !isRecovered ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400")}>
+                                {s.name}
+                              </span>
+                              <span className={"font-mono text-[9px] px-1 py-0.2 rounded font-bold " + 
+                                (s.status === 'DISRUPTED' && !isRecovered ? "bg-red-500/20 text-red-700 dark:text-red-300" : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300")
+                              }>
+                                {isRecovered && s.status === 'DISRUPTED' ? 'RECOVERED' : s.status}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       </div>
 
@@ -4461,24 +4552,30 @@
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold theme-text-main flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-                            Plants ({activeOrg.kpis ? activeOrg.kpis.plants.count : '6'})
+                            Plants ({organisationNetwork.plants.length})
                           </span>
                           <button 
-                            onClick={() => setViewAllModal('plants')}
-                            className="text-[10px] font-bold text-[#7C4DFF] hover:underline"
+                            onClick={() => setKpiDetailModal('plants')}
+                            className="text-[10px] font-bold text-[#7C4DFF] hover:underline cursor-pointer"
                           >
                             View All Plants
                           </button>
                         </div>
                         <div className="space-y-1.5 text-[11px]">
-                          <div className="p-1.5 rounded bg-amber-500/10 border border-amber-500/25 flex items-center justify-between">
-                            <span className="font-semibold text-amber-600 dark:text-amber-400 truncate">Munich Gigafactory (DE)</span>
-                            <span className="font-mono text-[9px] px-1 py-0.2 bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded font-bold">42% LOAD</span>
-                          </div>
-                          <div className="p-1.5 rounded bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between">
-                            <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate">Plant B Pune (Surge)</span>
-                            <span className="font-mono text-[9px] px-1 py-0.2 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded font-bold">+30% BUFFER</span>
-                          </div>
+                          {(organisationNetwork.plants || []).slice(0, 2).map((p, pIdx) => (
+                            <div 
+                              key={p.id || pIdx}
+                              onClick={() => { setSelectedNode(p); setInspectedEntity(p); }}
+                              className="p-1.5 rounded bg-purple-500/10 border border-purple-500/25 flex items-center justify-between cursor-pointer transition hover:opacity-80"
+                            >
+                              <span className="font-semibold text-purple-600 dark:text-purple-400 truncate">
+                                {p.name}
+                              </span>
+                              <span className="font-mono text-[9px] px-1 py-0.2 bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded font-bold">
+                                {p.utilization}% UTIL
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       </div>
 
@@ -4487,24 +4584,30 @@
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold theme-text-main flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                            Warehouses ({activeOrg.kpis ? activeOrg.kpis.warehouses.count : '8'})
+                            Warehouses ({organisationNetwork.warehouses.length})
                           </span>
                           <button 
-                            onClick={() => setViewAllModal('warehouses')}
-                            className="text-[10px] font-bold text-[#107E3E] hover:underline"
+                            onClick={() => setKpiDetailModal('warehouses')}
+                            className="text-[10px] font-bold text-[#107E3E] hover:underline cursor-pointer"
                           >
                             View All Warehouses
                           </button>
                         </div>
                         <div className="space-y-1.5 text-[11px]">
-                          <div className="p-1.5 rounded bg-blue-500/10 border border-blue-500/25 flex items-center justify-between">
-                            <span className="font-semibold text-blue-600 dark:text-blue-400 truncate">Rotterdam Logistics Hub</span>
-                            <span className="font-mono text-[9px] px-1 py-0.2 bg-blue-500/20 text-blue-700 dark:text-blue-300 rounded font-bold">5.4k BUFFER</span>
-                          </div>
-                          <div className="p-1.5 rounded bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between">
-                            <span className="font-semibold text-emerald-600 dark:text-emerald-400 truncate">Antwerp Decoupled Hub</span>
-                            <span className="font-mono text-[9px] px-1 py-0.2 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded font-bold">12d BUFFER</span>
-                          </div>
+                          {(organisationNetwork.warehouses || []).slice(0, 2).map((w, wIdx) => (
+                            <div 
+                              key={w.id || wIdx}
+                              onClick={() => { setSelectedNode(w); setInspectedEntity(w); }}
+                              className="p-1.5 rounded bg-blue-500/10 border border-blue-500/25 flex items-center justify-between cursor-pointer transition hover:opacity-80"
+                            >
+                              <span className="font-semibold text-blue-600 dark:text-blue-400 truncate">
+                                {w.name}
+                              </span>
+                              <span className="font-mono text-[9px] px-1 py-0.2 bg-blue-500/20 text-blue-700 dark:text-blue-300 rounded font-bold">
+                                {w.stock.toLocaleString()} BUF
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       </div>
 
@@ -4513,26 +4616,36 @@
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold theme-text-main flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                            Customer Markets
+                            Customer Markets ({organisationNetwork.customers.length})
                           </span>
-                          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">98.5% SLA</span>
+                          <button 
+                            onClick={() => setKpiDetailModal('orders')}
+                            className="text-[10px] font-bold text-[#6366F1] hover:underline cursor-pointer"
+                          >
+                            View All Orders
+                          </button>
                         </div>
                         <div className="space-y-1.5 text-[11px]">
-                          <div className="p-1.5 rounded bg-purple-500/10 border border-purple-500/25 flex items-center justify-between">
-                            <span className="font-semibold text-purple-600 dark:text-purple-400 truncate">Global Automotive OEM</span>
-                            <span className="font-mono text-[9px] px-1 py-0.2 bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded font-bold">12 PROGRAMS</span>
-                          </div>
-                          <div className="p-1.5 rounded theme-bg-card border theme-border flex items-center justify-between">
-                            <span className="theme-text-muted truncate">EU & North America</span>
-                            <span className="font-mono text-[9px] text-emerald-600 font-bold">ON TRACK</span>
-                          </div>
+                          {(organisationNetwork.customers || []).slice(0, 2).map((c, cIdx) => (
+                            <div 
+                              key={c.id || cIdx}
+                              onClick={() => { setSelectedNode(c); setInspectedEntity(c); }}
+                              className="p-1.5 rounded bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-between cursor-pointer transition hover:opacity-80"
+                            >
+                              <span className="font-semibold text-indigo-600 dark:text-indigo-400 truncate">
+                                {c.name}
+                              </span>
+                              <span className="font-mono text-[9px] px-1 py-0.2 bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 rounded font-bold">
+                                {c.slaTarget} SLA
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       </div>
 
                     </div>
                   </div>
 
-                  {/* ===================================================== */}
                   {/* 4. AI MONITORING SUMMARY                              */}
                   {/* ===================================================== */}
                   <div className="theme-bg-card border theme-border rounded-xl p-4 theme-card-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -6610,7 +6723,14 @@
               </div>
             )}
 {/* VIEW ALL NODES MODAL (LARGE ORGANISATION NETWORKS) */}
-            {viewAllModal && (
+            {viewAllModal && (() => {
+              const suppliers = organisationNetwork.suppliers || [];
+              const plants = organisationNetwork.plants || [];
+              const warehouses = organisationNetwork.warehouses || [];
+              const customers = organisationNetwork.customers || [];
+              const totalNodes = suppliers.length + plants.length + warehouses.length + customers.length;
+
+              return (
               <div 
                 className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fadeIn"
                 style={{ background: 'var(--modal-overlay)' }}
@@ -6627,48 +6747,55 @@
                       </div>
                       <div>
                         <h3 className="text-base font-bold theme-text-main">
-                          {viewAllModal === 'suppliers' && `${activeOrg.name} — Supplier Network (${activeOrg.supplierList ? activeOrg.supplierList.length : 24} Nodes)`}
-                          {viewAllModal === 'plants' && `${activeOrg.name} — Manufacturing Facilities (${activeOrg.plantList ? activeOrg.plantList.length : 6} Plants)`}
-                          {viewAllModal === 'warehouses' && `${activeOrg.name} — Warehouses & Buffer Hubs (${activeOrg.warehouseList ? activeOrg.warehouseList.length : 8} Hubs)`}
-                          {viewAllModal === 'all' && `${activeOrg.name} — Complete Supply Chain Network Topology`}
+                          {viewAllModal === 'suppliers' && `${organisationNetwork.name} — Complete Supplier Network (${suppliers.length} Nodes)`}
+                          {viewAllModal === 'plants' && `${organisationNetwork.name} — Manufacturing Facilities (${plants.length} Plants)`}
+                          {viewAllModal === 'warehouses' && `${organisationNetwork.name} — Warehouses & Buffer Hubs (${warehouses.length} Hubs)`}
+                          {viewAllModal === 'customers' && `${organisationNetwork.name} — Customer Markets & Delivery Networks (${customers.length} Markets)`}
+                          {viewAllModal === 'all' && `${organisationNetwork.name} — Complete Supply Chain Network Topology (${totalNodes} Nodes)`}
                         </h3>
                         <p className="text-xs theme-text-muted">
-                          Multi-tier enterprise supply chain topology loaded from Enterprise Data Store
+                          Single source of truth multi-tier enterprise supply chain topology loaded from Enterprise Data Store
                         </p>
                       </div>
                     </div>
                     <button 
                       onClick={() => setViewAllModal(null)}
-                      className="p-1.5 rounded-lg hover:theme-bg-elevated theme-text-muted hover:theme-text-main text-xs font-mono"
+                      className="p-1.5 rounded-lg hover:theme-bg-elevated theme-text-muted hover:theme-text-main text-xs font-mono cursor-pointer"
                     >
                       ✕ Close
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2 border-b theme-border pb-2 text-xs font-mono">
+                  <div className="flex items-center gap-2 border-b theme-border pb-2 text-xs font-mono flex-wrap">
                     <button
                       onClick={() => setViewAllModal('all')}
-                      className={`px-3 py-1 rounded-lg border transition ${viewAllModal === 'all' ? 'bg-[#0A6ED1] text-white font-bold' : 'theme-bg-elevated theme-text-muted hover:theme-text-main'}`}
+                      className={`px-3 py-1 rounded-lg border transition cursor-pointer ${viewAllModal === 'all' ? 'bg-[#0A6ED1] text-white font-bold' : 'theme-bg-elevated theme-text-muted hover:theme-text-main'}`}
                     >
-                      All Echelons
+                      All Echelons ({totalNodes})
                     </button>
                     <button
                       onClick={() => setViewAllModal('suppliers')}
-                      className={`px-3 py-1 rounded-lg border transition ${viewAllModal === 'suppliers' ? 'bg-[#0A6ED1] text-white font-bold' : 'theme-bg-elevated theme-text-muted hover:theme-text-main'}`}
+                      className={`px-3 py-1 rounded-lg border transition cursor-pointer ${viewAllModal === 'suppliers' ? 'bg-[#0A6ED1] text-white font-bold' : 'theme-bg-elevated theme-text-muted hover:theme-text-main'}`}
                     >
-                      Suppliers ({activeOrg.supplierList ? activeOrg.supplierList.length : 24})
+                      Suppliers ({suppliers.length})
                     </button>
                     <button
                       onClick={() => setViewAllModal('plants')}
-                      className={`px-3 py-1 rounded-lg border transition ${viewAllModal === 'plants' ? 'bg-[#7C4DFF] text-white font-bold' : 'theme-bg-elevated theme-text-muted hover:theme-text-main'}`}
+                      className={`px-3 py-1 rounded-lg border transition cursor-pointer ${viewAllModal === 'plants' ? 'bg-[#7C4DFF] text-white font-bold' : 'theme-bg-elevated theme-text-muted hover:theme-text-main'}`}
                     >
-                      Plants ({activeOrg.plantList ? activeOrg.plantList.length : 6})
+                      Plants ({plants.length})
                     </button>
                     <button
                       onClick={() => setViewAllModal('warehouses')}
-                      className={`px-3 py-1 rounded-lg border transition ${viewAllModal === 'warehouses' ? 'bg-[#107E3E] text-white font-bold' : 'theme-bg-elevated theme-text-muted hover:theme-text-main'}`}
+                      className={`px-3 py-1 rounded-lg border transition cursor-pointer ${viewAllModal === 'warehouses' ? 'bg-[#107E3E] text-white font-bold' : 'theme-bg-elevated theme-text-muted hover:theme-text-main'}`}
                     >
-                      Warehouses ({activeOrg.warehouseList ? activeOrg.warehouseList.length : 8})
+                      Warehouses ({warehouses.length})
+                    </button>
+                    <button
+                      onClick={() => setViewAllModal('customers')}
+                      className={`px-3 py-1 rounded-lg border transition cursor-pointer ${viewAllModal === 'customers' ? 'bg-[#6366F1] text-white font-bold' : 'theme-bg-elevated theme-text-muted hover:theme-text-main'}`}
+                    >
+                      Customers ({customers.length})
                     </button>
                   </div>
 
@@ -6676,18 +6803,22 @@
                     {(viewAllModal === 'suppliers' || viewAllModal === 'all') && (
                       <div className="space-y-2">
                         <div className="text-xs font-bold theme-text-main uppercase tracking-wider text-[#0A6ED1]">
-                          Suppliers ({activeOrg.supplierList ? activeOrg.supplierList.length : 24} Nodes)
+                          Suppliers ({suppliers.length} Nodes)
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {(activeOrg.supplierList || []).map((sup, idx) => (
-                            <div key={sup.id || idx} className="p-3 rounded-xl theme-bg-elevated border theme-border flex items-center justify-between">
+                          {suppliers.map((sup, idx) => (
+                            <div 
+                              key={sup.id || idx} 
+                              onClick={() => { setSelectedNode(sup); setInspectedEntity(sup); }}
+                              className="p-3 rounded-xl theme-bg-elevated border theme-border flex items-center justify-between cursor-pointer hover:border-[#0A6ED1] transition"
+                            >
                               <div>
                                 <div className="font-bold theme-text-main flex items-center gap-1.5">
                                   <span>{sup.name}</span>
                                   <span className={`text-[9.5px] font-mono px-1.5 py-0.2 rounded font-bold ${
-                                    sup.status === 'DISRUPTED' ? 'bg-red-500/20 text-red-600' :
+                                    sup.status === 'DISRUPTED' && !isRecovered ? 'bg-red-500/20 text-red-600' :
                                     sup.status === 'RISK' ? 'bg-amber-500/20 text-amber-600' : 'bg-emerald-500/20 text-emerald-600'
-                                  }`}>{sup.status}</span>
+                                  }`}>{isRecovered && sup.status === 'DISRUPTED' ? 'RECOVERED' : sup.status}</span>
                                 </div>
                                 <div className="text-[11px] theme-text-muted">{sup.location} • {sup.material}</div>
                               </div>
@@ -6704,11 +6835,15 @@
                     {(viewAllModal === 'plants' || viewAllModal === 'all') && (
                       <div className="space-y-2 pt-2">
                         <div className="text-xs font-bold theme-text-main uppercase tracking-wider text-[#7C4DFF]">
-                          Manufacturing Plants ({activeOrg.plantList ? activeOrg.plantList.length : 6} Facilities)
+                          Manufacturing Plants ({plants.length} Facilities)
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {(activeOrg.plantList || []).map((plt, idx) => (
-                            <div key={plt.id || idx} className="p-3 rounded-xl theme-bg-elevated border theme-border flex items-center justify-between">
+                          {plants.map((plt, idx) => (
+                            <div 
+                              key={plt.id || idx} 
+                              onClick={() => { setSelectedNode(plt); setInspectedEntity(plt); }}
+                              className="p-3 rounded-xl theme-bg-elevated border theme-border flex items-center justify-between cursor-pointer hover:border-[#7C4DFF] transition"
+                            >
                               <div>
                                 <div className="font-bold theme-text-main flex items-center gap-1.5">
                                   <span>{plt.name}</span>
@@ -6731,11 +6866,15 @@
                     {(viewAllModal === 'warehouses' || viewAllModal === 'all') && (
                       <div className="space-y-2 pt-2">
                         <div className="text-xs font-bold theme-text-main uppercase tracking-wider text-[#107E3E]">
-                          Warehouses & Strategic Buffers ({activeOrg.warehouseList ? activeOrg.warehouseList.length : 8} Hubs)
+                          Warehouses & Strategic Buffers ({warehouses.length} Hubs)
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {(activeOrg.warehouseList || []).map((wh, idx) => (
-                            <div key={wh.id || idx} className="p-3 rounded-xl theme-bg-elevated border theme-border flex items-center justify-between">
+                          {warehouses.map((wh, idx) => (
+                            <div 
+                              key={wh.id || idx} 
+                              onClick={() => { setSelectedNode(wh); setInspectedEntity(wh); }}
+                              className="p-3 rounded-xl theme-bg-elevated border theme-border flex items-center justify-between cursor-pointer hover:border-[#107E3E] transition"
+                            >
                               <div>
                                 <div className="font-bold theme-text-main flex items-center gap-1.5">
                                   <span>{wh.name}</span>
@@ -6752,126 +6891,52 @@
                         </div>
                       </div>
                     )}
-                  </div>
 
-                  <div className="flex items-center justify-end pt-2 border-t theme-border">
-                    <button
-                      onClick={() => setViewAllModal(null)}
-                      className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-xs font-semibold theme-text-main hover:brightness-110"
-                    >
-                      Close Window
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {showDisruptionPopup && (
-              <div 
-                className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fadeIn"
-                style={{ background: 'var(--modal-overlay)' }}
-              >
-                <div className="theme-bg-card border-2 border-red-500/80 rounded-2xl max-w-2xl w-full p-6 space-y-6 shadow-2xl glow-red">
-                  <div className="flex items-center justify-between border-b theme-border pb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30 flex items-center justify-center animate-pulse">
-                        <Icons.Disruption />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded bg-red-500/15 text-red-600 dark:text-red-300 border border-red-500/30">
-                            CRITICAL / HIGH SEVERITY
-                          </span>
-                          <span className="text-xs font-mono theme-text-muted">Enterprise ERP Sensing Alert</span>
+                    {(viewAllModal === 'customers' || viewAllModal === 'all') && (
+                      <div className="space-y-2 pt-2">
+                        <div className="text-xs font-bold theme-text-main uppercase tracking-wider text-[#6366F1]">
+                          Customer Markets ({customers.length} Markets)
                         </div>
-                        <h3 className="text-lg font-bold theme-text-main mt-0.5">
-                          Disruption Detected: Port Congestion at Chennai Port
-                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {customers.map((c, idx) => (
+                            <div 
+                              key={c.id || idx} 
+                              onClick={() => { setSelectedNode(c); setInspectedEntity(c); }}
+                              className="p-3 rounded-xl theme-bg-elevated border theme-border flex items-center justify-between cursor-pointer hover:border-[#6366F1] transition"
+                            >
+                              <div>
+                                <div className="font-bold theme-text-main flex items-center gap-1.5">
+                                  <span>{c.name}</span>
+                                  <span className={`text-[9.5px] font-mono px-1.5 py-0.2 rounded font-bold ${
+                                    c.status === 'AT_RISK' && !isRecovered ? 'bg-amber-500/20 text-amber-600' : 'bg-emerald-500/20 text-emerald-600'
+                                  }`}>{isRecovered && c.status === 'AT_RISK' ? 'PROTECTED' : c.status}</span>
+                                </div>
+                                <div className="text-[11px] theme-text-muted">{c.region} • {c.programs}</div>
+                              </div>
+                              <div className="text-right font-mono text-[10.5px]">
+                                <div className="theme-text-muted">Target SLA: <strong>{c.slaTarget}</strong></div>
+                                <div className="theme-text-muted">Pending: <strong>{c.ordersPending}</strong></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    <button
-                      onClick={() => setShowDisruptionPopup(false)}
-                      className="text-xs theme-text-muted hover:theme-text-main font-mono cursor-pointer"
-                    >
-                      ✕
-                    </button>
+                    )}
                   </div>
 
-                  <div className="space-y-4">
-                    {/* What happened */}
-                    <div className="p-4 rounded-xl theme-bg-elevated border theme-border space-y-1">
-                      <div className="text-[11px] font-mono font-bold text-red-600 dark:text-red-400 uppercase flex items-center gap-1.5">
-                        <span>●</span> What Happened:
-                      </div>
-                      <p className="text-sm font-semibold theme-text-main">
-                        Severe port congestion at Chennai Container Terminal causing 14-day delays for critical battery cells (Cell-Type-2170).
-                      </p>
-                    </div>
-
-                    {/* Why it matters */}
-                    <div className="p-4 rounded-xl theme-bg-elevated border theme-border space-y-1">
-                      <div className="text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400 uppercase flex items-center gap-1.5">
-                        <span>●</span> Why It Matters:
-                      </div>
-                      <p className="text-sm font-semibold theme-text-main">
-                        Plant Munich faces imminent stockout in 72 hours; halts 1,200 EV packs/day. Financial exposure estimated at $3.2M.
-                      </p>
-                    </div>
-
-                    {/* Affected Nodes & Route */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
-                      <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                        <span className="text-[10px] theme-text-muted block">AFFECTED SUPPLIER</span>
-                        <span className="font-bold text-red-600 dark:text-red-400">Bharat Cell Technologies (Chennai)</span>
-                      </div>
-                      <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                        <span className="text-[10px] theme-text-muted block">AFFECTED PLANT</span>
-                        <span className="font-bold text-amber-600 dark:text-amber-400">Munich Gigafactory</span>
-                      </div>
-                      <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                        <span className="text-[10px] theme-text-muted block">AFFECTED ROUTE</span>
-                        <span className="font-bold theme-text-main">Chennai → Munich Ocean Route</span>
-                      </div>
-                    </div>
-
-                    {/* Cascade Flow Diagram */}
-                    <div className="p-3.5 rounded-xl bg-red-500/5 border border-red-500/20 text-xs space-y-1.5">
-                      <div className="text-[10px] font-mono font-bold theme-text-muted uppercase">Disruption Blast Radius:</div>
-                      <div className="flex items-center flex-wrap gap-2 text-[11px] font-mono">
-                        <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-600 font-semibold">Chennai Port Dwell (14d)</span>
-                        <span>➔</span>
-                        <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-600 font-semibold">Bharat Cell Stall</span>
-                        <span>➔</span>
-                        <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 font-semibold">Munich Buffer (72h)</span>
-                        <span>➔</span>
-                        <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 font-semibold">1,200 EV Packs/Day Halt</span>
-                        <span>➔</span>
-                        <span className="px-2 py-0.5 rounded bg-red-500/15 text-red-600 font-bold">$3.2M Risk</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-3 border-t theme-border">
-                    <button
-                      onClick={() => setShowDisruptionPopup(false)}
-                      className="px-4 py-2.5 rounded-xl border theme-border text-xs font-semibold theme-text-muted hover:theme-text-main cursor-pointer"
+                  <div className="pt-2 border-t theme-border flex justify-between items-center text-xs">
+                    <span className="theme-text-muted">Showing all live network telemetry for {organisationNetwork.name}</span>
+                    <button 
+                      onClick={() => setViewAllModal(null)}
+                      className="px-4 py-1.5 rounded-lg bg-[#0A6ED1] text-white font-bold hover:brightness-110 transition cursor-pointer"
                     >
-                      Dismiss / Monitor
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDisruptionPopup(false);
-                        setActiveTab('disruptions');
-                      }}
-                      className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:brightness-110 text-white font-bold text-xs shadow-md shadow-red-500/25 flex items-center gap-2 cursor-pointer"
-                    >
-                      <span>Analyse Disruption</span>
-                      <Icons.ArrowRight />
+                      Done
                     </button>
                   </div>
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {/* ========================================================= */}
             {/* NODE DETAILS INSPECTION DRAWER (PAGE 3 REQUIREMENT 2)     */}
@@ -6880,187 +6945,289 @@
             {/* ========================================================= */}
             {/* KPI DETAIL VIEW MODAL (CLICK NAVIGATION ON KPI CARDS)     */}
             {/* ========================================================= */}
-            {kpiDetailModal && (
-              <div 
-                className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fadeIn"
-                style={{ background: 'var(--modal-overlay)' }}
-                onClick={() => setKpiDetailModal(null)}
-              >
+            {kpiDetailModal && (() => {
+              const suppliers = organisationNetwork.suppliers || [];
+              const plants = organisationNetwork.plants || [];
+              const warehouses = organisationNetwork.warehouses || [];
+              const customers = organisationNetwork.customers || [];
+              const orders = organisationNetwork.ordersList || [];
+              const shipments = organisationNetwork.shipmentsList || [];
+
+              // Filter state for modal list
+              const filteredList = (() => {
+                if (kpiDetailModal === 'suppliers') {
+                  return suppliers.filter(s => {
+                    if (supplierFilterTab === 'CRITICAL') return s.tier && (s.tier.includes('Tier-1') || s.tier.includes('Primary'));
+                    if (supplierFilterTab === 'BACKUP') return s.tier && s.tier.includes('Standby');
+                    if (supplierFilterTab === 'DISRUPTED') return s.status === 'DISRUPTED';
+                    if (supplierFilterTab === 'OPERATIONAL') return s.status === 'OPERATIONAL';
+                    return true;
+                  }).filter(s => !kpiSearchQuery || s.name.toLowerCase().includes(kpiSearchQuery.toLowerCase()) || s.location.toLowerCase().includes(kpiSearchQuery.toLowerCase()));
+                }
+                if (kpiDetailModal === 'plants') {
+                  return plants.filter(p => !kpiSearchQuery || p.name.toLowerCase().includes(kpiSearchQuery.toLowerCase()) || p.location.toLowerCase().includes(kpiSearchQuery.toLowerCase()));
+                }
+                if (kpiDetailModal === 'warehouses') {
+                  return warehouses.filter(w => !kpiSearchQuery || w.name.toLowerCase().includes(kpiSearchQuery.toLowerCase()) || w.location.toLowerCase().includes(kpiSearchQuery.toLowerCase()));
+                }
+                if (kpiDetailModal === 'inventory') {
+                  return warehouses.map(w => ({
+                    id: 'INV-' + w.id,
+                    material: w.material || 'Automotive Battery Modules & Lithium Cells',
+                    location: w.location,
+                    stock: w.stock,
+                    safetyStock: w.bufferCapacity,
+                    health: 'Optimal Buffer'
+                  }));
+                }
+                if (kpiDetailModal === 'orders') {
+                  return orders;
+                }
+                if (kpiDetailModal === 'shipments') {
+                  return shipments;
+                }
+                return [];
+              })();
+
+              const PAGE_SIZE = kpiViewAll ? filteredList.length : 6;
+              const totalPages = Math.ceil(filteredList.length / PAGE_SIZE) || 1;
+              const displayedItems = filteredList.slice((kpiPage - 1) * PAGE_SIZE, kpiPage * PAGE_SIZE);
+
+              return (
                 <div 
-                  className="theme-bg-card border-2 theme-border rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
-                  onClick={(e) => e.stopPropagation()}
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fadeIn"
+                  style={{ background: 'var(--modal-overlay)' }}
+                  onClick={() => { setKpiDetailModal(null); setKpiSearchQuery(''); setKpiPage(1); setKpiViewAll(false); }}
                 >
-                  <div className="flex items-center justify-between border-b theme-border pb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#0A6ED1] flex items-center justify-center font-bold">
-                        {kpiDetailModal === 'suppliers' && <Icons.Factory />}
-                        {kpiDetailModal === 'plants' && <Icons.Cpu />}
-                        {kpiDetailModal === 'warehouses' && <Icons.Database />}
-                        {kpiDetailModal === 'inventory' && <Icons.Shield />}
-                        {kpiDetailModal === 'orders' && <Icons.CheckCircle2 />}
-                        {kpiDetailModal === 'shipments' && <Icons.Globe />}
+                  <div 
+                    className="theme-bg-card border-2 theme-border rounded-2xl max-w-4xl w-full p-6 space-y-4 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between border-b theme-border pb-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-[#0A6ED1] flex items-center justify-center font-bold text-lg">
+                          {kpiDetailModal === 'suppliers' && <Icons.Factory />}
+                          {kpiDetailModal === 'plants' && <Icons.Cpu />}
+                          {kpiDetailModal === 'warehouses' && <Icons.Database />}
+                          {kpiDetailModal === 'inventory' && <Icons.Shield />}
+                          {kpiDetailModal === 'orders' && <Icons.CheckCircle2 />}
+                          {kpiDetailModal === 'shipments' && <Icons.Globe />}
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold theme-text-main flex items-center gap-2">
+                            {kpiDetailModal === 'suppliers' && `${organisationNetwork.name} — Supplier Network (${suppliers.length} Total Suppliers)`}
+                            {kpiDetailModal === 'plants' && `${organisationNetwork.name} — Manufacturing Facilities (${plants.length} Active Plants)`}
+                            {kpiDetailModal === 'warehouses' && `${organisationNetwork.name} — Warehouse & Storage Network (${warehouses.length} Hubs)`}
+                            {kpiDetailModal === 'inventory' && `${organisationNetwork.name} — Material Inventory & Strategic Buffers`}
+                            {kpiDetailModal === 'orders' && `${organisationNetwork.name} — Customer Order Tracking (${orders.length} Active Orders)`}
+                            {kpiDetailModal === 'shipments' && `${organisationNetwork.name} — Global Freight & Shipment Telemetry`}
+                          </h3>
+                          <p className="text-xs theme-text-muted">
+                            Single source of truth operational records for {organisationNetwork.name} ({organisationNetwork.code})
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-base font-bold theme-text-main">
-                          {kpiDetailModal === 'suppliers' && 'Supplier Network Details (24 Active Suppliers)'}
-                          {kpiDetailModal === 'plants' && 'Operational Plants (6 Assembly Facilities)'}
-                          {kpiDetailModal === 'warehouses' && 'Warehouse Network & Storage Buffers (8 Connected Hubs)'}
-                          {kpiDetailModal === 'inventory' && 'Inventory Availability & Safety Stocks (92% Purity)'}
-                          {kpiDetailModal === 'orders' && 'Active Customer Orders (1,240 Total Demand)'}
-                          {kpiDetailModal === 'shipments' && 'Global Freight & Shipment Tracking (96% On-Time SLA)'}
-                        </h3>
-                        <p className="text-xs theme-text-muted">
-                          Detailed multi-tier operational telemetry from Enterprise ERP & Logistics Control Tower
-                        </p>
+                      <button 
+                        onClick={() => { setKpiDetailModal(null); setKpiSearchQuery(''); setKpiPage(1); setKpiViewAll(false); }}
+                        className="p-1.5 rounded-lg hover:theme-bg-elevated theme-text-muted hover:theme-text-main text-lg transition cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Filter and Search Bar */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                      {kpiDetailModal === 'suppliers' && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {['ALL', 'CRITICAL', 'DISRUPTED', 'OPERATIONAL', 'BACKUP'].map(tab => (
+                            <button
+                              key={tab}
+                              onClick={() => { setSupplierFilterTab(tab); setKpiPage(1); }}
+                              className={`px-2.5 py-1 rounded-lg font-mono font-semibold transition cursor-pointer ${
+                                supplierFilterTab === tab ? 'bg-[#0A6ED1] text-white' : 'theme-bg-elevated theme-text-muted border theme-border hover:theme-text-main'
+                              }`}
+                            >
+                              {tab} ({tab === 'ALL' ? suppliers.length : suppliers.filter(s => {
+                                if (tab === 'CRITICAL') return s.tier && (s.tier.includes('Tier-1') || s.tier.includes('Primary'));
+                                if (tab === 'BACKUP') return s.tier && s.tier.includes('Standby');
+                                if (tab === 'DISRUPTED') return s.status === 'DISRUPTED';
+                                if (tab === 'OPERATIONAL') return s.status === 'OPERATIONAL';
+                                return true;
+                              }).length})
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <input
+                          type="text"
+                          value={kpiSearchQuery}
+                          onChange={(e) => { setKpiSearchQuery(e.target.value); setKpiPage(1); }}
+                          placeholder="Search records..."
+                          className="w-full sm:w-48 px-3 py-1.5 rounded-xl border theme-border theme-bg-elevated text-xs theme-text-main placeholder:theme-text-muted focus:outline-none focus:border-[#0A6ED1]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setKpiViewAll(!kpiViewAll)}
+                          className={`px-3 py-1.5 rounded-xl border theme-border font-bold text-xs whitespace-nowrap cursor-pointer transition ${
+                            kpiViewAll ? 'bg-[#0A6ED1] text-white' : 'theme-bg-elevated theme-text-muted hover:theme-text-main'
+                          }`}
+                        >
+                          {kpiViewAll ? 'Paginated View' : `View All (${filteredList.length})`}
+                        </button>
                       </div>
                     </div>
-                    <button 
-                      onClick={() => setKpiDetailModal(null)}
-                      className="p-1 rounded-lg hover:theme-bg-elevated theme-text-muted hover:theme-text-main text-xs font-mono"
-                    >
-                      ✕ Close
-                    </button>
-                  </div>
 
-                  <div className="overflow-y-auto space-y-3 flex-1 pr-1">
-                    {/* SUPPLIERS DETAIL VIEW */}
-                    {kpiDetailModal === 'suppliers' && (
-                      <div className="space-y-3 text-xs">
-                        {[
-                          { name: 'Bharat Cell Technologies', loc: 'Chennai Port, India', cap: '40% (Disrupted by Port Congestion)', rel: '94.8%', risk: 'High (87/100)', status: 'DISRUPTED' },
-                          { name: 'Katowice Electro Component Hub', loc: 'Katowice, Poland', cap: '100% Nominal (120k u/yr)', rel: '98.2%', risk: 'Low (18/100)', status: 'OPERATIONAL' },
-                          { name: 'Taoyuan Precision Cathodes', loc: 'Taoyuan, Taiwan', cap: '100% Automotive Grade', rel: '97.8%', risk: 'Low (22/100)', status: 'OPERATIONAL' },
-                          { name: 'Shenzhen Advanced Silicon', loc: 'Shenzhen, China', cap: '95% Standard Run', rel: '96.2%', risk: 'Med (35/100)', status: 'OPERATIONAL' }
-                        ].map((s, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl border theme-border theme-bg-elevated flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div>
-                              <div className="font-bold theme-text-main text-sm">{s.name}</div>
-                              <div className="text-[11px] theme-text-muted font-mono">{s.loc}</div>
+                    {/* Entities List (Reading directly from organisationNetwork) */}
+                    <div className="overflow-y-auto space-y-2.5 flex-1 pr-1 max-h-[500px]">
+                      {kpiDetailModal === 'suppliers' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
+                          {displayedItems.map((s) => (
+                            <div 
+                              key={s.id} 
+                              onClick={() => { setSelectedNode(s); setInspectedEntity(s); setKpiDetailModal(null); }}
+                              className="p-3.5 rounded-xl border theme-border theme-bg-elevated hover:border-[#0A6ED1] transition flex flex-col justify-between gap-2 cursor-pointer"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold theme-text-main text-sm truncate">{s.name}</span>
+                                <span className={`text-[9.5px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                                  s.status === 'DISRUPTED' ? 'bg-red-500/20 text-red-600' :
+                                  s.status === 'RISK' ? 'bg-amber-500/20 text-amber-600' : 'bg-emerald-500/20 text-emerald-600'
+                                }`}>
+                                  {isRecovered && s.status === 'DISRUPTED' ? 'STABILIZED' : s.status}
+                                </span>
+                              </div>
+                              <div className="text-[11px] theme-text-muted">{s.location} • {s.material}</div>
+                              <div className="grid grid-cols-3 gap-2 pt-2 border-t theme-border font-mono text-[10.5px]">
+                                <div><span className="text-muted block text-[9.5px]">CAPACITY</span><strong className={s.status === 'DISRUPTED' && !isRecovered ? 'text-red-500' : 'text-emerald-500'}>{isRecovered && s.status === 'DISRUPTED' ? '100%' : (s.capacity || 100) + '%'}</strong></div>
+                                <div><span className="text-muted block text-[9.5px]">LEAD TIME</span><strong>{s.leadTime}</strong></div>
+                                <div><span className="text-muted block text-[9.5px]">RISK</span><strong className={s.status === 'DISRUPTED' && !isRecovered ? 'text-red-500' : 'text-emerald-500'}>{isRecovered && s.status === 'DISRUPTED' ? '14/100' : s.riskScore}</strong></div>
+                              </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-3 font-mono text-[11px]">
-                              <div><span className="text-muted block text-[10px]">CAPACITY</span><strong className={s.status === 'DISRUPTED' && !isRecovered ? 'text-red-500' : 'text-emerald-500'}>{isRecovered && s.status === 'DISRUPTED' ? '100%' : s.cap}</strong></div>
-                              <div><span className="text-muted block text-[10px]">RELIABILITY</span><strong>{s.rel}</strong></div>
-                              <div><span className="text-muted block text-[10px]">RISK</span><strong className={s.status === 'DISRUPTED' && !isRecovered ? 'text-red-500' : 'text-emerald-500'}>{isRecovered && s.status === 'DISRUPTED' ? 'Low (14/100)' : s.risk}</strong></div>
+                          ))}
+                        </div>
+                      )}
+
+                      {kpiDetailModal === 'plants' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
+                          {displayedItems.map((p) => {
+                            const util = isRecovered && p.id === 'PLANT-01' ? 94 : p.utilization;
+                            return (
+                              <div 
+                                key={p.id} 
+                                onClick={() => { setSelectedNode(p); setInspectedEntity(p); setKpiDetailModal(null); }}
+                                className="p-3.5 rounded-xl border theme-border theme-bg-elevated hover:border-[#7C4DFF] transition flex flex-col justify-between gap-2 cursor-pointer"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-bold theme-text-main text-sm truncate">{p.name}</span>
+                                  <span className={`text-[9.5px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                                    p.status === 'BOTTLENECKED' ? 'bg-amber-500/20 text-amber-600' : 'bg-emerald-500/20 text-emerald-600'
+                                  }`}>
+                                    {isRecovered && p.status === 'BOTTLENECKED' ? 'SURGING' : p.status}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] theme-text-muted">{p.location} • {p.productionLines} Production Lines</div>
+                                <div className="grid grid-cols-3 gap-2 pt-2 border-t theme-border font-mono text-[10.5px]">
+                                  <div><span className="text-muted block text-[9.5px]">UTILIZATION</span><strong className="text-purple-600">{util}%</strong></div>
+                                  <div><span className="text-muted block text-[9.5px]">CAPACITY</span><strong>{p.capacity.toLocaleString()} u/mo</strong></div>
+                                  <div><span className="text-muted block text-[9.5px]">ORDERS</span><strong>{p.activeOrders}</strong></div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {kpiDetailModal === 'warehouses' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
+                          {displayedItems.map((w) => (
+                            <div 
+                              key={w.id} 
+                              onClick={() => { setSelectedNode(w); setInspectedEntity(w); setKpiDetailModal(null); }}
+                              className="p-3.5 rounded-xl border theme-border theme-bg-elevated hover:border-[#107E3E] transition flex flex-col justify-between gap-2 cursor-pointer"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold theme-text-main text-sm truncate">{w.name}</span>
+                                <span className="text-[9.5px] font-mono px-2 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-600">CONNECTED</span>
+                              </div>
+                              <div className="text-[11px] theme-text-muted">{w.location} • {w.bufferCapacity}</div>
+                              <div className="grid grid-cols-3 gap-2 pt-2 border-t theme-border font-mono text-[10.5px]">
+                                <div><span className="text-muted block text-[9.5px]">STOCK</span><strong className="text-emerald-600">{w.stock.toLocaleString()}</strong></div>
+                                <div><span className="text-muted block text-[9.5px]">SLA TARGET</span><strong>{w.sla}</strong></div>
+                                <div><span className="text-muted block text-[9.5px]">STATUS</span><strong>{w.status}</strong></div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
 
-                    {/* PLANTS DETAIL VIEW */}
-                    {kpiDetailModal === 'plants' && (
-                      <div className="space-y-3 text-xs">
-                        {[
-                          { loc: 'Pune Battery Facility (Plant A), India', cap: '10,000 units/mo', util: '94% (High Line Load)', status: isRecovered ? 'STABILIZED' : 'BOTTLENECKED', risk: '85/100' },
-                          { loc: 'Wroclaw Pack Plant (Plant B), Poland', cap: '15,000 units/mo', util: isRecovered ? '88% Surging (+1,000 u)' : '48% (Reserve Capacity)', status: isRecovered ? 'SURGE ACTIVE' : 'BUFFER AVAILABLE', risk: '12/100' },
-                          { loc: 'Munich Gigafactory 1, Germany', cap: '25,000 units/mo', util: '91% (Nominal Run)', status: 'OPERATIONAL', risk: '15/100' },
-                          { loc: 'Bratislava Assembly Hub, Slovakia', cap: '12,000 units/mo', util: '86% (Balanced Run)', status: 'OPERATIONAL', risk: '18/100' }
-                        ].map((p, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl border theme-border theme-bg-elevated flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div>
-                              <div className="font-bold theme-text-main text-sm">{p.loc}</div>
-                              <div className="text-[11px] font-mono text-muted">Assembly & Module Packaging</div>
+                      {kpiDetailModal === 'inventory' && (
+                        <div className="space-y-2 text-xs">
+                          {displayedItems.map((inv, idx) => (
+                            <div key={idx} className="p-3 rounded-xl border theme-border theme-bg-elevated flex items-center justify-between">
+                              <div>
+                                <div className="font-bold theme-text-main">{inv.material}</div>
+                                <div className="text-[11px] theme-text-muted font-mono">{inv.location}</div>
+                              </div>
+                              <div className="text-right font-mono">
+                                <div className="text-emerald-500 font-bold">{inv.stock.toLocaleString()} units available</div>
+                                <div className="text-[10px] theme-text-muted">{inv.safetyStock}</div>
+                              </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-3 font-mono text-[11px]">
-                              <div><span className="text-muted block text-[10px]">CAPACITY</span><strong>{p.cap}</strong></div>
-                              <div><span className="text-muted block text-[10px]">UTILIZATION</span><strong className="text-blue-500">{p.util}</strong></div>
-                              <div><span className="text-muted block text-[10px]">STATUS</span><span className={'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (p.status.includes('BOTTLENECKED') ? 'bg-amber-500/20 text-amber-600' : 'bg-emerald-500/20 text-emerald-600')}>{p.status}</span></div>
+                          ))}
+                        </div>
+                      )}
+
+                      {(kpiDetailModal === 'orders' || kpiDetailModal === 'shipments') && (
+                        <div className="space-y-2 text-xs">
+                          {displayedItems.map((item, idx) => (
+                            <div key={item.id || idx} className="p-3 rounded-xl border theme-border theme-bg-elevated flex items-center justify-between">
+                              <div>
+                                <div className="font-bold theme-text-main">{item.customer || item.carrier || item.id}</div>
+                                <div className="text-[11px] theme-text-muted font-mono">{item.destination || item.route || item.description}</div>
+                              </div>
+                              <div className="text-right font-mono">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-600">{item.status || 'Active'}</span>
+                                <div className="text-[10px] theme-text-muted mt-0.5">{item.eta || item.volume || 'On Schedule'}</div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
-                    {/* WAREHOUSES DETAIL VIEW */}
-                    {kpiDetailModal === 'warehouses' && (
-                      <div className="space-y-3 text-xs">
-                        {[
-                          { name: 'Central European Distribution Hub (WH-ROT)', loc: 'Rotterdam, Netherlands', storage: '18,000 Pallets', inv: '5,400 units safety stock', status: '100% Operational' },
-                          { name: 'Middle East Cross-Dock Center (WH-UAE)', loc: 'Dubai Logistics City, UAE', storage: '12,000 Pallets', inv: '3,200 units buffer', status: 'Operational' },
-                          { name: 'Nhava Sheva Consolidation Buffer', loc: 'Mumbai / Nhava Sheva, India', storage: '8,000 Pallets', inv: '2,100 units buffer', status: 'Operational' },
-                          { name: 'Frankfurt Air Cargo Terminal Hub', loc: 'Frankfurt Airport, Germany', storage: '10,000 Pallets', inv: '4,000 units express buffer', status: 'Operational' }
-                        ].map((w, idx) => (
-                          <div key={idx} className="p-3.5 rounded-xl border theme-border theme-bg-elevated flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div>
-                              <div className="font-bold theme-text-main text-sm">{w.name}</div>
-                              <div className="text-[11px] theme-text-muted font-mono">{w.loc}</div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 font-mono text-[11px]">
-                              <div><span className="text-muted block text-[10px]">STORAGE CAPACITY</span><strong>{w.storage}</strong></div>
-                              <div><span className="text-muted block text-[10px]">INVENTORY BUFFER</span><strong className="text-emerald-500">{w.inv}</strong></div>
-                            </div>
-                          </div>
-                        ))}
+                    {/* Pagination Bar */}
+                    <div className="flex items-center justify-between pt-3 border-t theme-border text-xs font-mono">
+                      <span className="theme-text-muted">
+                        Showing {Math.min(filteredList.length, (kpiPage - 1) * PAGE_SIZE + 1)}–{Math.min(filteredList.length, kpiPage * PAGE_SIZE)} of {filteredList.length} records
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          disabled={kpiPage <= 1}
+                          onClick={() => setKpiPage(p => Math.max(1, p - 1))}
+                          className="px-2.5 py-1 rounded-lg border theme-border theme-bg-elevated disabled:opacity-40 cursor-pointer"
+                        >
+                          Prev
+                        </button>
+                        <span>Page {kpiPage} of {totalPages}</span>
+                        <button
+                          type="button"
+                          disabled={kpiPage >= totalPages}
+                          onClick={() => setKpiPage(p => Math.min(totalPages, p + 1))}
+                          className="px-2.5 py-1 rounded-lg border theme-border theme-bg-elevated disabled:opacity-40 cursor-pointer"
+                        >
+                          Next
+                        </button>
                       </div>
-                    )}
+                    </div>
 
-                    {/* INVENTORY DETAIL VIEW */}
-                    {kpiDetailModal === 'inventory' && (
-                      <div className="space-y-3 text-xs">
-                        <div className="grid grid-cols-3 gap-3 p-3.5 rounded-xl border theme-border theme-bg-card font-mono text-center">
-                          <div><span className="text-muted block text-[10px]">TOTAL BUFFER</span><strong className="text-base text-emerald-500">18,400 u</strong></div>
-                          <div><span className="text-muted block text-[10px]">AVAILABILITY</span><strong className="text-base text-[#0A6ED1]">92.4%</strong></div>
-                          <div><span className="text-muted block text-[10px]">SLA MARGIN</span><strong className="text-base text-purple-500">+21.0% Safe</strong></div>
-                        </div>
-                        <div className="p-3.5 rounded-xl border theme-border theme-bg-elevated space-y-2">
-                          <div className="font-bold theme-text-main">Buffer Stock Breakdown by Material:</div>
-                          <div className="space-y-1.5 font-mono text-[11px]">
-                            <div className="flex justify-between"><span>Lithium Cathode Cells (NMC-811):</span><strong>5,400 units (Rotterdam)</strong></div>
-                            <div className="flex justify-between"><span>Automotive Microcontrollers (MC-88):</span><strong>4,200 units (Frankfurt)</strong></div>
-                            <div className="flex justify-between"><span>Power Inverter Modules (SiC):</span><strong>3,600 units (Dubai)</strong></div>
-                            <div className="flex justify-between"><span>Pre-Assembled EV Battery Packs:</span><strong>5,200 units (Munich)</strong></div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* ORDERS DETAIL VIEW */}
-                    {kpiDetailModal === 'orders' && (
-                      <div className="space-y-3 text-xs">
-                        <div className="grid grid-cols-3 gap-3 text-center font-mono">
-                          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30"><span className="text-muted block text-[10px]">COMPLETED</span><strong className="text-lg text-emerald-500">1,120</strong><span className="text-[10px] block theme-text-muted">90.3%</span></div>
-                          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30"><span className="text-muted block text-[10px]">PENDING</span><strong className="text-lg text-amber-500">95</strong><span className="text-[10px] block theme-text-muted">7.7%</span></div>
-                          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30"><span className="text-muted block text-[10px]">DELAYED</span><strong className={'text-lg ' + (isRecovered ? 'text-emerald-500' : 'text-red-500')}>{isRecovered ? 0 : 25}</strong><span className="text-[10px] block theme-text-muted">{isRecovered ? '0.0%' : '2.0%'}</span></div>
-                        </div>
-                        <div className="p-3.5 rounded-xl border theme-border theme-bg-elevated space-y-1 font-mono text-[11px]">
-                          <div className="font-bold theme-text-main">OEM Customer Account Status:</div>
-                          <div className="flex justify-between"><span>BMW Group (Munich Plant):</span><span className="text-emerald-500">✓ On Schedule (98.2% SLA)</span></div>
-                          <div className="flex justify-between"><span>Mercedes-Benz AG (Stuttgart Plant):</span><span className="text-emerald-500">✓ On Schedule (97.5% SLA)</span></div>
-                          <div className="flex justify-between"><span>Audi Sport (Ingolstadt Facility):</span><span className={isRecovered ? 'text-emerald-500' : 'text-amber-500'}>{isRecovered ? '✓ Protected via Scenario SCN-004' : '⚠ 12 Orders at Risk (Disruption Impact)'}</span></div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* SHIPMENTS DETAIL VIEW */}
-                    {kpiDetailModal === 'shipments' && (
-                      <div className="space-y-3 text-xs">
-                        <div className="grid grid-cols-3 gap-3 text-center font-mono">
-                          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30"><span className="text-muted block text-[10px]">DELIVERED</span><strong className="text-lg text-emerald-500">156</strong><span className="text-[10px] block theme-text-muted">78.0%</span></div>
-                          <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30"><span className="text-muted block text-[10px]">IN TRANSIT</span><strong className="text-lg text-[#0A6ED1]">36</strong><span className="text-[10px] block theme-text-muted">18.0%</span></div>
-                          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30"><span className="text-muted block text-[10px]">DELAYED</span><strong className={'text-lg ' + (isRecovered ? 'text-emerald-500' : 'text-red-500')}>{isRecovered ? 0 : 8}</strong><span className="text-[10px] block theme-text-muted">{isRecovered ? '0.0%' : '4.0%'}</span></div>
-                        </div>
-                        <div className="p-3.5 rounded-xl border theme-border theme-bg-elevated space-y-1 font-mono text-[11px]">
-                          <div className="font-bold theme-text-main">Active Multimodal Freight Corridors:</div>
-                          <div className="flex justify-between"><span>Route 1 (Chennai → Munich Ocean Route):</span><span className={isRecovered ? 'text-emerald-500' : 'text-red-500'}>{isRecovered ? 'Rerouted to Express Air' : '⚠ Port Congestion Dwell (+14d)'}</span></div>
-                          <div className="flex justify-between"><span>Route 2 (Katowice → Stuttgart Rail Express):</span><span className="text-emerald-500">✓ On Schedule (3.5 Days Transit)</span></div>
-                          <div className="flex justify-between"><span>Route 3 (Lufthansa Cargo Flight LH-8422):</span><span className="text-emerald-500 font-bold">{isRecovered ? '★ Active Surge Delivery (2.0 Days ETA)' : 'Standby Express Corridor'}</span></div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-2 border-t theme-border flex items-center justify-between">
-                    <span className="text-[10px] font-mono theme-text-muted">Enterprise ERP TM Telemetry • Updated Live</span>
-                    <button
-                      onClick={() => setKpiDetailModal(null)}
-                      className="px-4 py-2 rounded-xl bg-[#0A6ED1] text-white font-bold text-xs hover:brightness-110 cursor-pointer"
-                    >
-                      Done
-                    </button>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {inspectedEntity && (
               <div 
