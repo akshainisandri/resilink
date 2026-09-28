@@ -2079,20 +2079,21 @@
         };
       }, [isRecovered]);
 
-      // Execute Recovery Action (POST to SAP CAP)
+      // Execute Recovery Action (POST to SAP CAP / OData Service)
       const executeRecoveryPlan = async (scenarioId = 'SCN-004') => {
         setIsExecuting(true);
         setShowApprovalModal(false);
 
         const executionPayload = {
           scenarioId: scenarioId,
-          recoveryType: 'HYBRID_CAPACITY_REBALANCE',
-          originPlant: 'PLANT-A (Stuttgart)',
-          targetPlant: 'PLANT-B (Pune)',
-          volumeUnits: 1000,
-          expressCarrier: 'Lufthansa Cargo Flight LH-8422 (BOM-DXB)',
-          sapTransactionType: 'Z_AUTONOMOUS_RECOVERY',
-          executedBy: 'Pia (VP Global Supply Chain)',
+          recoveryType: scenarioId === 'SCN-001' ? 'PASSIVE_ACCEPTANCE' :
+                        scenarioId === 'SCN-002' ? 'ALTERNATE_SUPPLIER' :
+                        scenarioId === 'SCN-003' ? 'INVENTORY_REALLOCATION' : 'HYBRID_CAPACITY_REBALANCE',
+          originPlant: 'PLANT-A (Munich)',
+          targetPlant: scenarioId === 'SCN-004' ? 'PLANT-B (Pune)' : scenarioId === 'SCN-002' ? 'LG Chem Wroclaw' : 'Munich Primary',
+          volumeUnits: scenarioId === 'SCN-004' ? 1000 : scenarioId === 'SCN-002' ? 1200 : 0,
+          expressCarrier: scenarioId === 'SCN-004' ? 'Lufthansa Cargo Flight LH-8422' : 'Standard Logistics Fleet',
+          executedBy: (activeOrg && activeOrg.userName) || 'Pia (VP Global Supply Chain)',
           timestamp: new Date().toISOString()
         };
 
@@ -2104,153 +2105,131 @@
           });
           if (response.ok) {
             const data = await response.json();
-            console.log('SAP CAP Live Response:', data);
+            console.log('Recovery Action Response:', data);
           }
         } catch (error) {
-          console.warn('Live SAP CAP endpoint unavailable; running simulated fallback.');
+          console.warn('Simulated fallback execution.');
         }
 
         setTimeout(() => {
           setIsExecuting(false);
           setIsRecovered(true);
 
-          // Update nodes state with fully dual-sourced recovery
+          // Update activeOrg's real KPIs and Analytics based on the chosen scenario
+          if (scenarioId === 'SCN-004') {
+            if (activeOrg.kpis) {
+              activeOrg.kpis.inventory.count = '94%';
+              activeOrg.kpis.inventory.status = 'Optimal';
+              activeOrg.kpis.plants.cap = '94.2% Cap';
+              activeOrg.kpis.plants.status = 'Optimal';
+              activeOrg.kpis.orders.trend = '100% on track (0 delayed)';
+              activeOrg.kpis.shipments.count = '98%';
+            }
+            if (activeOrg.analytics) {
+              activeOrg.analytics.delayedOrders = 0;
+              activeOrg.analytics.stock = 18800;
+              activeOrg.analytics.delayedShipments = 0;
+            }
+            activeOrg.resilienceScore = 96;
+            setNetworkResilienceScore(96);
+          } else if (scenarioId === 'SCN-002') {
+            if (activeOrg.kpis) {
+              activeOrg.kpis.inventory.count = '89%';
+              activeOrg.kpis.plants.cap = '82.0% Cap';
+              activeOrg.kpis.orders.trend = '2 orders delayed';
+              activeOrg.kpis.shipments.count = '92%';
+            }
+            if (activeOrg.analytics) {
+              activeOrg.analytics.delayedOrders = 2;
+              activeOrg.analytics.stock = 17100;
+              activeOrg.analytics.delayedShipments = 2;
+            }
+            activeOrg.resilienceScore = 88;
+            setNetworkResilienceScore(88);
+          } else if (scenarioId === 'SCN-003') {
+            if (activeOrg.kpis) {
+              activeOrg.kpis.inventory.count = '86%';
+              activeOrg.kpis.plants.cap = '78.5% Cap';
+              activeOrg.kpis.orders.trend = '4 orders delayed';
+              activeOrg.kpis.shipments.count = '89%';
+            }
+            if (activeOrg.analytics) {
+              activeOrg.analytics.delayedOrders = 4;
+              activeOrg.analytics.stock = 16200;
+              activeOrg.analytics.delayedShipments = 4;
+            }
+            activeOrg.resilienceScore = 85;
+            setNetworkResilienceScore(85);
+          } else {
+            if (activeOrg.kpis) {
+              activeOrg.kpis.inventory.count = '74%';
+              activeOrg.kpis.plants.cap = '42.0% (Throttled)';
+              activeOrg.kpis.orders.trend = '12 orders delayed';
+              activeOrg.kpis.shipments.count = '84%';
+            }
+            if (activeOrg.analytics) {
+              activeOrg.analytics.delayedOrders = 12;
+              activeOrg.analytics.stock = 14500;
+              activeOrg.analytics.delayedShipments = 8;
+            }
+            activeOrg.resilienceScore = 72;
+            setNetworkResilienceScore(72);
+          }
+
+          // Update nodes state with scenario-specific capacity & health
           setNodes(prev => prev.map(node => {
-            if (node.id === 'SUP-CHN' || node.id === 'DSUP-A') {
-              return {
-                ...node,
-                capacity: 100,
-                status: 'OPERATIONAL',
-                activeDeficit: '0 units (Dual-Sourced via Wroclaw)',
-                color: '#107E3E'
-              };
-            }
-            if (node.id === 'SUP-WRO' || node.id === 'DSUP-B') {
-              return {
-                ...node,
-                capacity: 100,
-                status: 'OPERATIONAL',
-                allocation: 'ACTIVE SURGE: +1,200 units shifted to LG Chem Wroclaw',
-                color: '#107E3E'
-              };
-            }
-            if (node.id === 'PLANT-MUC' || node.id === 'PLANT-A' || node.id === 'DPLANT-A') {
-              return {
-                ...node,
-                status: 'STABILIZED',
-                capacity: 88,
-                currentUtilization: '88% (Dual-Sourced via Wroclaw & Pune)',
-                activeDeficit: '0 units (Full operations secured)',
-                color: '#107E3E'
-              };
-            }
-            if (node.id === 'PLANT-PUN' || node.id === 'PLANT-B' || node.id === 'DPLANT-C') {
-              return {
-                ...node,
-                capacity: 125,
-                allocation: 'ACTIVE REBALANCE: +1,000 units surging (98% line load)',
-                bufferCapacity: 'Reserve Deployed (Lufthansa Express Air)',
-                status: 'REBALANCED',
-                color: '#107E3E'
-              };
-            }
-            if (node.id === 'DIST-OEM' || node.id === 'DIST-GLOBAL') {
-              return {
-                ...node,
-                status: 'OPERATIONAL',
-                capacity: 98,
-                ordersPending: '12 OEM Orders Preserved',
-                ordersDelivered: '98.5% (Preserved)',
-                ordersDelayed: '0 Delayed',
-                slaResolution: '98.5% Preserved (100% on schedule)',
-                pendingCommitments: 'All 12 Customer Deliveries on schedule (98.5% SLA)',
-                activeDeficit: '0 units',
-                color: '#107E3E'
-              };
+            if (scenarioId === 'SCN-004') {
+              if (node.id === 'SUP-CHN' || node.id === 'DSUP-A') return { ...node, capacity: 100, status: 'OPERATIONAL', color: '#107E3E' };
+              if (node.id === 'SUP-WRO' || node.id === 'DSUP-B') return { ...node, capacity: 100, status: 'OPERATIONAL', allocation: 'Active Surge (+1,200 units)', color: '#107E3E' };
+              if (node.id === 'PLANT-MUC' || node.id === 'PLANT-A') return { ...node, status: 'STABILIZED', capacity: 94, color: '#107E3E' };
+              if (node.id === 'PLANT-PUN' || node.id === 'PLANT-B') return { ...node, status: 'REBALANCED', capacity: 100, color: '#107E3E' };
+              if (node.id === 'DIST-OEM') return { ...node, status: 'OPERATIONAL', capacity: 98, color: '#107E3E' };
+            } else if (scenarioId === 'SCN-002') {
+              if (node.id === 'SUP-WRO') return { ...node, capacity: 100, status: 'OPERATIONAL', color: '#107E3E' };
+              if (node.id === 'PLANT-MUC') return { ...node, status: 'STABILIZED', capacity: 82, color: '#0A6ED1' };
+            } else if (scenarioId === 'SCN-003') {
+              if (node.id === 'WH-ROT') return { ...node, availableStock: '3,200 units buffer', status: 'BUFFER_DEPLETED', color: '#E9730C' };
+              if (node.id === 'PLANT-MUC') return { ...node, status: 'STABILIZED', capacity: 78, color: '#0A6ED1' };
             }
             return node;
           }));
 
-          // Update disruption banner
-          setDisruption(prev => ({
-            ...prev,
-            state: 'RESOLVED',
-            headline: 'Autonomous Recovery Executed via SAP CAP — 40% volume shifted to LG Chem Wroclaw + air freight 15% buffer. Munich Gigafactory stockout prevented; all 12 OEM orders secured.'
-          }));
-
-          // Append action execution logs as requested
-          const nowStr = new Date().toUTCString().slice(17, 25);
+          const nowStr = new Date().toLocaleTimeString();
           const newLogs = [
-            {
-              id: 'LOG-SAP-01',
-              time: nowStr,
-              agent: 'SAP ERP Integration Agent',
-              type: 'Execution',
-              color: 'emerald',
-              event: 'SAP ERP PO #PO-98432 rerouted to LG Chem Wroclaw',
-              detail: 'Purchase Order #PO-98432 EDI 850 amendment committed to SAP S/4HANA. 1,200 cell modules rerouted to LG Chem Wroclaw (Plant Code: PLANT_PL_2020).',
-              payload: { poNumber: 'PO-98432', targetVendor: 'LG Chem Wroclaw', status: 'COMMITTED' }
-            },
-            {
-              id: 'LOG-SAP-02',
-              time: nowStr,
-              agent: 'Logistics Execution Agent',
-              type: 'Execution',
-              color: 'cyan',
-              event: 'Air freight charter booked via Lufthansa Cargo',
-              detail: 'Charter Flight LH-8422 confirmed for 15% emergency cell buffer. Waybill AWB-774-88492 authorized under SOX 404 gate.',
-              payload: { flight: 'LH-8422', carrier: 'Lufthansa Cargo', bufferVolume: '15%' }
-            },
-            {
-              id: 'LOG-SAP-03',
-              time: nowStr,
-              agent: 'Inventory Planning Agent',
-              type: 'Execution',
-              color: 'blue',
-              event: 'Inventory safety stock updated in SAP IBP',
-              detail: 'Safety stock buffer synchronized in SAP Integrated Business Planning (IBP). Munich buffer restored to 14 days.',
-              payload: { system: 'SAP IBP', bufferDays: 14, status: 'SYNCHRONIZED' }
-            },
-            {
-              id: 'LOG-SAP-04',
-              time: nowStr,
-              agent: 'Control Tower Orchestrator',
-              type: 'Compliance',
-              color: 'emerald',
-              event: 'Alert cleared from Control Tower',
-              detail: 'Disruption incident DISR-CHN-2026 transitioned to RESOLVED. Plant Munich stockout risk eliminated.',
-              payload: { incident: 'DISR-CHN-2026', state: 'RESOLVED', residualRisk: '24/100' }
-            },
             {
               id: 'LOG-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
               time: nowStr,
               agent: 'Execution Agent',
               type: 'Execution',
               color: 'emerald',
-              event: 'Autonomous Recovery Executed via SAP CAP.',
-              detail: 'Dispatched POST /odata/v4/resilink/executeRecoveryPlan for SCN-004. Plant B (Pune) line surge authorized in SAP S/4HANA. Express air cargo slots locked on LH-8422.',
-              payload: { executionPayload, sapStatus: '200 OK', transactionId: 'TX-HANA-99214' }
-            },
-            {
-              id: 'LOG-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
-              time: nowStr,
-              agent: 'Resilience Memory',
-              type: 'Memory',
-              color: 'blue',
-              event: 'Decision logged into SAP HANA Cloud HDI Container.',
-              detail: 'Feedback score +14% recorded. SCN-004 vector reinforced as optimal recovery archetype for automotive micro-controller shortages.',
-              payload: { hdiTable: 'RESILINK_HISTORICAL_RUNS', scoreGain: '+14.0%', status: 'COMMITTED' }
+              event: 'Autonomous Recovery Executed via SAP CAP (executeRecoveryPlan).',
+              detail: 'Dispatched POST /odata/v4/resilink/executeRecoveryPlan for ' + scenarioId + '. Network capacity rebalanced and customer commitments secured.',
+              payload: { executionPayload, status: '200 OK', transactionId: 'TX-' + scenarioId + '-OK' }
             }
           ];
-
           setAuditLogs(prev => [...newLogs, ...prev]);
 
+          setDisruption(prev => ({
+            ...prev,
+            state: 'RESOLVED',
+            headline: scenarioId === 'SCN-004' 
+              ? 'Hybrid Recovery Executed: 40% volume shifted to LG Chem Wroclaw + air freight 15% buffer. Production stabilized at 98.5% SLA.'
+              : scenarioId === 'SCN-002'
+                ? 'Alternate Supplier Deployed: 100% volume shifted to LG Chem Wroclaw. Production running at 82% capacity.'
+                : scenarioId === 'SCN-003'
+                  ? 'Inventory Reallocation Deployed: Safety buffer deployed from Rotterdam Hub. Line 1 operational.'
+                  : 'Passive Acceptance Acknowledged: Assembly Line 1 throttled; 12 OEM deliveries rescheduled.'
+          }));
+
           setToast({
-            title: 'Recovery Strategy Dispatched to SAP CAP',
-            message: 'Transaction TX-HANA-99214 confirmed in SAP HANA Cloud. Plant B surge active, 12 customer orders protected at 96% SLA.',
+            title: 'Recovery Plan Deployed',
+            message: 'Supply chain state updated for ' + scenarioId + '. Network and Dashboard synchronized.',
             type: 'success'
           });
-        }, 850);
+
+          // Handover to Overview dashboard so user sees refreshed metrics
+          setActiveTab('overview');
+        }, 750);
       };
 
       // Reset Demo State
@@ -2862,7 +2841,7 @@
           {/* 1. NARROW MODERN ENTERPRISE SIDEBAR NAVIGATION           */}
           {/* ========================================================= */}
           <aside className={`theme-bg-sidebar border-r theme-border flex flex-col justify-between transition-all duration-300 z-30 ${
-            sidebarCollapsed ? 'w-20' : 'w-60'
+            sidebarCollapsed ? 'w-20' : 'w-72'
           }`}>
             <div>
               {/* Sidebar Header */}
@@ -2965,7 +2944,7 @@
                   <span className="text-[#0A6ED1] font-semibold">{latencyMs}ms</span>
                 </div>
                 <div className="text-[11px] truncate">
-                  HDI: <span className="font-mono theme-text-main">RESILINK_HDI_DB</span>
+                  Multi-Tier: <span className="font-mono theme-text-main">Connected</span>
                 </div>
               </div>
             ) : (
@@ -5876,84 +5855,125 @@
               {/* ------------------------------------------------------- */}
               {/* PAGE 6: SAP CAP CDS ARCHITECTURE & SCHEMA               */}
               {/* ------------------------------------------------------- */}
-              {activeTab === 'sap_schema' && (
-                <div className="theme-bg-card border theme-border rounded-2xl p-6 space-y-6 animate-fadeIn theme-card-shadow">
-                  <div className="border-b theme-border pb-4">
-                    <h2 className="text-lg font-bold theme-text-main flex items-center gap-2">
-                      <Icons.Code /> SAP Cloud Application Programming Model (CAP) Integration Specification
-                    </h2>
+              {(activeTab === 'sap_schema' || activeTab === 'learn') && (
+                <div className="space-y-6 animate-fadeIn">
+                  
+                  {/* Executive Architecture Header */}
+                  <div className="theme-bg-card border theme-border rounded-xl p-5 theme-card-shadow">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-indigo-500/15 text-indigo-600 text-sm">
+                        <Icons.Activity />
+                      </span>
+                      <h2 className="text-base font-bold theme-text-main">
+                        Enterprise AI Supply Chain Architecture & Learning Engine
+                      </h2>
+                    </div>
                     <p className="text-xs theme-text-muted mt-1">
-                      Direct single-file drop-in for SAP Business Application Studio (BAS). Zero build step required.
+                      Visual operational architecture: End-to-end telemetry pipeline from enterprise data sources to autonomous recovery actions
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <div className="text-xs font-mono text-cyan-600 dark:text-cyan-400">srv/resilink-service.cds</div>
-                      <pre className="p-4 theme-bg-app border theme-border rounded-xl text-xs font-mono theme-text-muted overflow-x-auto leading-relaxed">
-{`using { resilink as db } from '../db/schema';
+                  {/* Clean Visual Architecture Diagram: Data Sources -> AI Agents -> Decision Engine -> Digital Twin -> Recovery Actions */}
+                  <div className="theme-bg-card border theme-border rounded-xl p-6 theme-card-shadow space-y-4">
+                    <h3 className="text-xs font-bold theme-text-main uppercase tracking-wider flex items-center gap-2">
+                      <Icons.Layers /> End-to-End Enterprise Flow Architecture
+                    </h3>
 
-service ResilinkService @(path: '/odata/v4/resilink') {
-  @readonly entity Nodes as projection on db.Nodes;
-  @readonly entity Disruptions as projection on db.Disruptions;
-  @readonly entity Scenarios as projection on db.Scenarios;
-  @readonly entity AuditLogs as projection on db.AuditLogs;
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 relative">
+                      
+                      {/* Stage 1: Data Sources */}
+                      <div className="p-4 rounded-xl theme-bg-elevated border theme-border space-y-2">
+                        <div className="text-[10px] font-mono font-bold text-[#0A6ED1] uppercase">Stage 1</div>
+                        <h4 className="text-sm font-bold theme-text-main">Data Sources</h4>
+                        <p className="text-[11px] theme-text-muted leading-relaxed">
+                          Enterprise ERP, Logistics EDI 856, Vessel AIS Satellite Tracking, Weather Radar, and Port Congestion APIs.
+                        </p>
+                        <div className="pt-2 border-t theme-border text-[10px] font-mono text-cyan-600 font-bold">
+                          Live Ingestion Telemetry
+                        </div>
+                      </div>
 
-  // Custom Recovery Action wired to UI Button
-  action executeRecoveryPlan(
-    scenarioId: String,
-    targetPlant: String,
-    volumeUnits: Integer,
-    carrier: String
-  ) returns {
-    status: String;
-    transactionId: String;
-    reallocatedCapacity: Integer;
-    projectedSLA: Decimal(5,2);
-  };
-}`}
-                      </pre>
-                    </div>
+                      {/* Stage 2: AI Agents */}
+                      <div className="p-4 rounded-xl theme-bg-elevated border theme-border space-y-2">
+                        <div className="text-[10px] font-mono font-bold text-[#7C4DFF] uppercase">Stage 2</div>
+                        <h4 className="text-sm font-bold theme-text-main">AI Agents</h4>
+                        <p className="text-[11px] theme-text-muted leading-relaxed">
+                          Sensing Agent, Supplier Intelligence, Plant Optimizer, and Network Telemetry continuously scanning 36 supply nodes.
+                        </p>
+                        <div className="pt-2 border-t theme-border text-[10px] font-mono text-purple-600 font-bold">
+                          Multi-Agent Consensus
+                        </div>
+                      </div>
 
-                    <div className="space-y-2">
-                      <div className="text-xs font-mono text-emerald-600 dark:text-emerald-400">db/schema.cds</div>
-                      <pre className="p-4 theme-bg-app border theme-border rounded-xl text-xs font-mono theme-text-muted overflow-x-auto leading-relaxed">
-{`namespace resilink;
+                      {/* Stage 3: Decision Engine */}
+                      <div className="p-4 rounded-xl theme-bg-elevated border theme-border space-y-2">
+                        <div className="text-[10px] font-mono font-bold text-[#107E3E] uppercase">Stage 3</div>
+                        <h4 className="text-sm font-bold theme-text-main">Decision Engine</h4>
+                        <p className="text-[11px] theme-text-muted leading-relaxed">
+                          Monte Carlo Risk Modeling, Scenario Planning (SCN-001 to SCN-004), and Cost/SLA Trade-off Optimization.
+                        </p>
+                        <div className="pt-2 border-t theme-border text-[10px] font-mono text-emerald-600 font-bold">
+                          Constraint Solver
+                        </div>
+                      </div>
 
-entity Nodes {
-  key ID          : String(32);
-      name        : String(100);
-      type        : String(30);
-      location    : String(100);
-      status      : String(20);
-      capacity    : Integer;
-      baseline    : Integer;
-      sapPlantCode: String(30);
-}
+                      {/* Stage 4: Digital Twin */}
+                      <div className="p-4 rounded-xl theme-bg-elevated border theme-border space-y-2">
+                        <div className="text-[10px] font-mono font-bold text-amber-500 uppercase">Stage 4</div>
+                        <h4 className="text-sm font-bold theme-text-main">Digital Twin</h4>
+                        <p className="text-[11px] theme-text-muted leading-relaxed">
+                          Dynamic Graph Mesh modeling live material flows across Suppliers → Plants → Warehouses → Customer Markets.
+                        </p>
+                        <div className="pt-2 border-t theme-border text-[10px] font-mono text-amber-500 font-bold">
+                          Graph Topology Sync
+                        </div>
+                      </div>
 
-entity Disruptions {
-  key ID          : String(32);
-      severity    : String(20);
-      sourceNode  : String(100);
-      shortfallPct: Integer;
-      affectedUnits: Integer;
-      customerOrders: Integer;
-      headline    : LargeString;
-      status      : String(20);
-}
+                      {/* Stage 5: Recovery Actions */}
+                      <div className="p-4 rounded-xl theme-bg-elevated border theme-border space-y-2">
+                        <div className="text-[10px] font-mono font-bold text-red-500 uppercase">Stage 5</div>
+                        <h4 className="text-sm font-bold theme-text-main">Recovery Actions</h4>
+                        <p className="text-[11px] theme-text-muted leading-relaxed">
+                          Direct ERP Purchase Order amendments, Express Air Freight bypass charters, and Safety Buffer reallocations.
+                        </p>
+                        <div className="pt-2 border-t theme-border text-[10px] font-mono text-red-500 font-bold">
+                          Action Dispatch: /odata/v4/resilink/executeRecoveryPlan
+                        </div>
+                      </div>
 
-entity Scenarios {
-  key ID          : String(32);
-      name        : String(100);
-      cost        : String(50);
-      time        : String(30);
-      risk        : String(30);
-      sla         : String(20);
-      recommended : Boolean;
-}`}
-                      </pre>
                     </div>
                   </div>
+
+                  {/* Resilience Memory & Continuous Organizational Learning */}
+                  <div className="theme-bg-card border theme-border rounded-xl p-5 space-y-3 theme-card-shadow">
+                    <h3 className="text-xs font-bold theme-text-main uppercase tracking-wider flex items-center gap-2">
+                      <Icons.Database /> Enterprise Resilience Memory & Historical Archetypes
+                    </h3>
+                    <p className="text-xs theme-text-muted">
+                      Episodic feedback engine: each executed recovery scenario reinforces organizational supply chain reflexes and updates resilience vector patterns.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 text-xs">
+                      <div className="p-3.5 rounded-lg theme-bg-elevated border theme-border space-y-1">
+                        <div className="text-[10px] font-mono text-muted uppercase">Pattern Matching Accuracy</div>
+                        <div className="text-xl font-bold font-mono text-emerald-500">94.2% Cosine Similarity</div>
+                        <div className="text-[11px] theme-text-muted">Matched with 2024 Munich raw material recovery protocol</div>
+                      </div>
+
+                      <div className="p-3.5 rounded-lg theme-bg-elevated border theme-border space-y-1">
+                        <div className="text-[10px] font-mono text-muted uppercase">Autonomous Learning ROI</div>
+                        <div className="text-xl font-bold font-mono text-cyan-500">27.3x Economic Multiplier</div>
+                        <div className="text-[11px] theme-text-muted">$52k investment preserved $1.42M customer revenue commitments</div>
+                      </div>
+
+                      <div className="p-3.5 rounded-lg theme-bg-elevated border theme-border space-y-1">
+                        <div className="text-[10px] font-mono text-muted uppercase">Resilience Acceleration</div>
+                        <div className="text-xl font-bold font-mono text-[#7C4DFF]">{isRecovered ? '96/100 (+14%)' : '82/100 Baseline'}</div>
+                        <div className="text-[11px] theme-text-muted">Continuous organizational learning from real supply disruptions</div>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               )}
 
