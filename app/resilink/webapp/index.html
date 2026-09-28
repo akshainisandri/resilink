@@ -905,6 +905,408 @@
       }
     ];
 
+    
+    // =========================================================
+    // MULTI-TENANT SEPARATE ORGANISATION NETWORKS & MASTER DATA
+    // =========================================================
+    const BAV_NODES = [
+      {
+        id: 'SUP-BAV-1',
+        name: 'Alps Electronic Components',
+        category: 'Tier-1 Supplier',
+        location: 'Innsbruck, Austria',
+        country: 'AT',
+        status: 'OPERATIONAL',
+        capacity: 95,
+        baselineCapacity: 100,
+        reliability: '96.2%',
+        leadTime: '5 Days',
+        material: 'Inverter Gate Drivers & MOSFETs',
+        sapPo: 'PO-BAV-8821',
+        sapStorageLoc: 'SLOC_ALPS_01',
+        riskScore: '16/100',
+        activeDeficit: '0 units',
+        x: 100,
+        y: 110,
+        color: '#0A6ED1'
+      },
+      {
+        id: 'SUP-BAV-2',
+        name: 'Silesia Silicon Wafer Fab',
+        category: 'Tier-1 Supplier',
+        location: 'Katowice, Poland',
+        country: 'PL',
+        status: 'OPERATIONAL',
+        capacity: 100,
+        baselineCapacity: 100,
+        reliability: '98.0%',
+        leadTime: '4 Days',
+        material: 'Microcontroller Substrates',
+        sapPo: 'PO-BAV-9104',
+        sapStorageLoc: 'SLOC_SIL_02',
+        riskScore: '12/100',
+        activeDeficit: '0 units',
+        x: 100,
+        y: 290,
+        color: '#107E3E'
+      },
+      {
+        id: 'PLANT-BAV-1',
+        name: 'Stuttgart E-Motor Assembly (Plant 1)',
+        category: 'Manufacturing Plant',
+        location: 'Stuttgart, Germany',
+        country: 'DE',
+        status: 'OPERATIONAL',
+        capacity: 88,
+        baselineCapacity: 100,
+        productionCapacity: '12,000 e-motors / month',
+        currentUtilization: '88% Optimal',
+        handledOrders: '8 OEM Programs',
+        activeOrders: 8,
+        leadTime: '7 Days',
+        material: 'Permanent Magnet Synchronous Motors',
+        sapPlantCode: 'PLANT_STG_10',
+        sapStorageLoc: 'SLOC_STG_01',
+        riskScore: '18/100',
+        activeDeficit: '0 units',
+        x: 370,
+        y: 110,
+        color: '#107E3E'
+      },
+      {
+        id: 'PLANT-BAV-2',
+        name: 'Leipzig Powertrain Facility (Plant 2)',
+        category: 'Manufacturing Plant',
+        location: 'Leipzig, Germany',
+        country: 'DE',
+        status: 'BUFFER_AVAILABLE',
+        capacity: 94,
+        baselineCapacity: 100,
+        productionCapacity: '9,500 units / month',
+        currentUtilization: '62% (Flexible Line Active)',
+        handledOrders: 'Surge Powertrain Assembly',
+        bufferCapacity: '+2,000 units/mo Buffer',
+        leadTime: '3 Days',
+        material: 'Drive Unit Integrated Inverters',
+        sapPlantCode: 'PLANT_LEI_20',
+        sapStorageLoc: 'SLOC_LEI_02',
+        riskScore: '14/100',
+        activeDeficit: '0 units',
+        x: 370,
+        y: 290,
+        color: '#7C4DFF'
+      },
+      {
+        id: 'WH-BAV-1',
+        name: 'Nuremberg Automotive Logistics Hub',
+        category: 'Consolidation Center',
+        location: 'Nuremberg, Germany',
+        country: 'DE',
+        status: 'OPERATIONAL',
+        capacity: 96,
+        availableStock: '4,200 units buffer',
+        inventoryBuffer: '4,200 units buffer',
+        bufferCapacity: '18-Day Safety Reserve',
+        slaPurity: '99.1%',
+        leadTime: '1 Day',
+        material: 'Cross-Dock Finished E-Motors',
+        sapLocation: 'SLOC_NUR_01',
+        riskScore: '10/100',
+        x: 640,
+        y: 200,
+        color: '#0A6ED1'
+      },
+      {
+        id: 'DIST-BAV-1',
+        name: 'German & Nordic OEM Delivery Endpoints',
+        category: 'Market Endpoints',
+        location: 'Germany, Sweden, Norway',
+        country: 'EU',
+        status: 'OPERATIONAL',
+        capacity: 98,
+        pendingCommitments: 'All 8 OEM Batches on Track (98.4% SLA)',
+        sapContractGroup: 'BAV-OEM-CONTRACT-2026',
+        riskScore: '8/100',
+        x: 910,
+        y: 200,
+        color: '#107E3E'
+      }
+    ];
+
+    const ORGANIZATION_REGISTRY = {
+      'COMP-DE-900': {
+        id: 'COMP-DE-900',
+        name: 'Global AutoTech AG',
+        city: 'Munich, Germany',
+        code: 'COMP-DE-900',
+        industry: 'Automotive & Clean Mobility',
+        userEmail: 'pia.vp@autotech.corp',
+        password: 'password123',
+        userName: 'Pia',
+        userRole: 'Supply Chain VP',
+        resilienceScore: 94,
+        kpis: {
+          suppliers: { count: '24', status: 'Active', trend: '↑ +2 this qtr' },
+          plants: { count: '6', status: 'Optimal', cap: '94.2% Cap' },
+          warehouses: { count: '8', status: 'Connected', stock: '100% Online' },
+          inventory: { count: '92%', status: 'Available', trend: '↑ +3.4% buffer' },
+          orders: { count: '1,240', status: 'In Progress', trend: '98.1% on track' },
+          shipments: { count: '96%', status: 'On-Time', trend: '↑ +1.8% vs SLA' }
+        },
+        analytics: {
+          stock: 18400,
+          demand: 15200,
+          activeOrders: 1240,
+          completedOrders: 1120,
+          pendingOrders: 95,
+          delayedOrders: 25,
+          deliveredShipments: 156,
+          inTransitShipments: 36,
+          delayedShipments: 8
+        },
+        nodes: INITIAL_NODES
+      },
+      'BAV-MUC-10': {
+        id: 'BAV-MUC-10',
+        name: 'Bavaria EV Motors',
+        city: 'Stuttgart, Germany',
+        code: 'BAV-MUC-10',
+        industry: 'Electric Vehicles & Powertrains',
+        userEmail: 'hans.sc@bavaria-ev.de',
+        password: 'password123',
+        userName: 'Hans',
+        userRole: 'Supply Chain Director',
+        resilienceScore: 91,
+        kpis: {
+          suppliers: { count: '16', status: 'Active', trend: '↑ +1 this qtr' },
+          plants: { count: '4', status: 'Optimal', cap: '91.8% Cap' },
+          warehouses: { count: '5', status: 'Connected', stock: '100% Online' },
+          inventory: { count: '95%', status: 'Optimal', trend: '↑ +4.1% buffer' },
+          orders: { count: '860', status: 'In Progress', trend: '99.0% on track' },
+          shipments: { count: '98%', status: 'On-Time', trend: '↑ +2.4% vs SLA' }
+        },
+        analytics: {
+          stock: 14200,
+          demand: 11800,
+          activeOrders: 860,
+          completedOrders: 790,
+          pendingOrders: 62,
+          delayedOrders: 8,
+          deliveredShipments: 118,
+          inTransitShipments: 20,
+          delayedShipments: 2
+        },
+        nodes: BAV_NODES
+      }
+    };
+
+    // =========================================================
+    // MULTIPLE AI CANDIDATE ALTERNATIVES (3-4 CHOICES PER STEP)
+    // =========================================================
+    const BUILD_SUPPLIER_OPTIONS = [
+      {
+        id: 'SUP-OPT-A',
+        name: 'Bharat Cell Technologies (Supplier A)',
+        location: 'Chennai Port Container Terminal, India',
+        country: 'IN',
+        costTier: 'Low',
+        unitCost: '$125 / unit',
+        reliability: '82%',
+        riskTier: 'Medium',
+        riskScore: '48/100',
+        capacity: '95,000 units/yr',
+        leadTimeDays: 28,
+        isRecommended: false,
+        reason: 'Cost-optimized volume supplier with large manufacturing capacity. Suitable for cost-sensitive baseline requirements but higher transit dwell risk.'
+      },
+      {
+        id: 'SUP-OPT-B',
+        name: 'Taoyuan Precision Cathodes & Cells (Supplier B)',
+        location: 'Taoyuan, Taiwan',
+        country: 'TW',
+        costTier: 'Medium',
+        unitCost: '$155 / unit',
+        reliability: '95%',
+        riskTier: 'Low',
+        riskScore: '18/100',
+        capacity: '120,000 units/yr',
+        leadTimeDays: 14,
+        isRecommended: true,
+        reason: 'Selected because it provides the best balance between cost, capacity, and disruption risk with AEC-Q100 zero-defect certification and dual-source resilience.'
+      },
+      {
+        id: 'SUP-OPT-C',
+        name: 'Nordic Silicon & Clean Cathode Labs (Supplier C)',
+        location: 'Stockholm, Sweden',
+        country: 'SE',
+        costTier: 'High',
+        unitCost: '$195 / unit',
+        reliability: '98%',
+        riskTier: 'Very Low',
+        riskScore: '8/100',
+        capacity: '80,000 units/yr',
+        leadTimeDays: 7,
+        isRecommended: false,
+        reason: 'Ultra-high reliability and near-zero geopolitical risk powered by green hydroelectric energy, offering shortest lead times at a premium price.'
+      },
+      {
+        id: 'SUP-OPT-D',
+        name: 'Shenzhen Global Micro-Lithium (Supplier D)',
+        location: 'Shenzhen, China',
+        country: 'CN',
+        costTier: 'Low',
+        unitCost: '$110 / unit',
+        reliability: '75%',
+        riskTier: 'High',
+        riskScore: '65/100',
+        capacity: '150,000 units/yr',
+        leadTimeDays: 35,
+        isRecommended: false,
+        reason: 'Lowest unit purchase price with massive production capacity, but subject to shipping bottlenecks and elevated dwell variance.'
+      }
+    ];
+
+    const BUILD_PLANT_OPTIONS = [
+      {
+        id: 'PLANT-OPT-A',
+        name: 'Pune Gigafab 1 (Plant A)',
+        location: 'Pune, India',
+        country: 'IN',
+        capacity: '14,000 units/month',
+        cost: '$62 / unit assembly (Low)',
+        utilization: '78%',
+        leadTimeDays: 8,
+        isRecommended: false,
+        reason: 'High throughput assembly with competitive operational labor costs, well-suited for high-volume baseline manufacturing.'
+      },
+      {
+        id: 'PLANT-OPT-B',
+        name: 'Wroclaw Pack Assembly Plant (Plant B)',
+        location: 'Wroclaw, Poland',
+        country: 'PL',
+        capacity: '18,000 units/month',
+        cost: '$78 / unit assembly (Medium)',
+        utilization: '48% (Surge Ready)',
+        leadTimeDays: 5,
+        isRecommended: true,
+        reason: 'Plant B selected because it satisfies required production capacity with lower operating cost and better logistics coverage, with +30% standby buffer headroom.'
+      },
+      {
+        id: 'PLANT-OPT-C',
+        name: 'Munich High-Tech Gigafactory (Plant C)',
+        location: 'Munich, Germany',
+        country: 'DE',
+        capacity: '22,000 units/month',
+        cost: '$98 / unit assembly (High)',
+        utilization: '88% (High Load)',
+        leadTimeDays: 3,
+        isRecommended: false,
+        reason: 'Automated Industry 4.0 precision fab with top-tier quality standards and immediate proximity to Central European automotive clusters.'
+      }
+    ];
+
+    const BUILD_WAREHOUSE_OPTIONS = [
+      {
+        id: 'WH-OPT-A',
+        name: 'Central European Logistics Hub (Warehouse A)',
+        location: 'Rotterdam, Netherlands',
+        country: 'NL',
+        storageCapacity: '35,000 Pallets',
+        distanceToCustomers: 'Direct deepwater port + electrified rail corridor (<180km centroid)',
+        deliverySLA: '24h Pan-European Same-Day',
+        operatingCost: '$12.00 / pallet / mo (Medium)',
+        bufferReserve: '12,000 Pallets',
+        isRecommended: true,
+        reason: 'Selected by Warehouse Optimization Agent for deepwater port access, high-bay automated buffer storage, and direct electrified rail connection ensuring 98%+ SLA fulfillment.'
+      },
+      {
+        id: 'WH-OPT-B',
+        name: 'Frankfurt Global Air Cargo Hub (Warehouse B)',
+        location: 'Frankfurt, Germany',
+        country: 'DE',
+        storageCapacity: '20,000 Pallets',
+        distanceToCustomers: 'Central European highway/air centroid (<250km to plants)',
+        deliverySLA: '12h Express Dispatch',
+        operatingCost: '$18.50 / pallet / mo (High)',
+        bufferReserve: '8,000 Pallets',
+        isRecommended: false,
+        reason: 'Optimal for high-velocity JIT deliveries and urgent buffer replenishment across Central Europe with air freight connection.'
+      },
+      {
+        id: 'WH-OPT-C',
+        name: 'Antwerp Decoupled Logistics Center (Warehouse C)',
+        location: 'Antwerp, Belgium',
+        country: 'BE',
+        storageCapacity: '28,000 Pallets',
+        distanceToCustomers: 'Northwest Europe industrial corridor (240km centroid)',
+        deliverySLA: '24h-48h Regional SLA',
+        operatingCost: '$9.50 / pallet / mo (Low)',
+        bufferReserve: '10,000 Pallets',
+        isRecommended: false,
+        reason: 'Cost-effective bulk container storage with large capacity buffer space for seasonal inventory buffering.'
+      },
+      {
+        id: 'WH-OPT-D',
+        name: 'Katowice Regional Buffer Facility (Warehouse D)',
+        location: 'Katowice, Poland',
+        country: 'PL',
+        storageCapacity: '22,000 Pallets',
+        distanceToCustomers: 'Central & Eastern European corridor (190km centroid)',
+        deliverySLA: '24h Regional SLA',
+        operatingCost: '$8.20 / pallet / mo (Lowest)',
+        bufferReserve: '7,500 Pallets',
+        isRecommended: false,
+        reason: 'Direct proximity to Polish assembly facilities with lowest regional warehousing cost and dependable road transit.'
+      }
+    ];
+
+    const BUILD_ROUTE_OPTIONS = [
+      {
+        id: 'ROUTE-OPT-1',
+        name: 'Route 1: Standard Maritime Container Line via Suez Corridor',
+        mode: 'Ocean Freight Container Line',
+        transitTime: '28 Days',
+        cost: '$85 / unit (Lowest)',
+        risk: 'High (Chokepoint Dwell 45%)',
+        reliability: '78%',
+        isRecommended: false,
+        reason: 'Lowest freight cost, but exposed to maritime canal backlogs and port dwell delays.'
+      },
+      {
+        id: 'ROUTE-OPT-2',
+        name: 'Route 2: Hybrid Multimodal Coastal Rail + Express Fast-Sea (Route 3)',
+        mode: 'Multimodal Coastal Rail + Fast-Sea',
+        transitTime: '14 Days Guaranteed',
+        cost: '$142 / unit (Medium)',
+        risk: 'Low (12% Bypasses Chokepoints)',
+        reliability: '96%',
+        isRecommended: true,
+        reason: 'Selected by Logistics Intelligence Agent to bypass maritime chokepoints, reducing transit dwell by 42% with predictable rail connections.'
+      },
+      {
+        id: 'ROUTE-OPT-3',
+        name: 'Route 3: Trans-Eurasian Dedicated Express Rail Freight',
+        mode: 'Dedicated Overland Rail Express',
+        transitTime: '11 Days',
+        cost: '$185 / unit (Medium-High)',
+        risk: 'Medium (Border Customs 22%)',
+        reliability: '91%',
+        isRecommended: false,
+        reason: 'Fast overland transit with fixed scheduling, immune to sea adverse weather and port container dwell.'
+      },
+      {
+        id: 'ROUTE-OPT-4',
+        name: 'Route 4: Air Cargo Priority Direct Corridor',
+        mode: 'Air Cargo Priority',
+        transitTime: '3 Days',
+        cost: '$340 / unit (Highest)',
+        risk: 'Very Low (5%)',
+        reliability: '99%',
+        isRecommended: false,
+        reason: 'Emergency expedited freight for critical component replenishment with guaranteed next-day delivery SLA.'
+      }
+    ];
+
     const INITIAL_DISRUPTION = {
       id: 'DISR-CHN-2026',
       severity: 'CRITICAL',
@@ -1212,6 +1614,47 @@
       const [selectedWarehouses, setSelectedWarehouses] = useState(['DWH-X', 'DWH-Y']);
       const [bufferStrategy, setBufferStrategy] = useState('DECOUPLED_DUAL');
       const [selectedRoute, setSelectedRoute] = useState('DROUTE-3');
+
+      // Organization Registry & Stored Networks State (Multi-Tenant Isolation)
+      const [orgRegistry, setOrgRegistry] = useState(() => {
+        try {
+          const saved = localStorage.getItem('resilink_org_registry');
+          if (saved) return { ...ORGANIZATION_REGISTRY, ...JSON.parse(saved) };
+        } catch (e) {}
+        return ORGANIZATION_REGISTRY;
+      });
+
+      // BUILD Module Multi-Alternative Selections (Interactive 3-4 Candidates)
+      const [selectedSupplierOption, setSelectedSupplierOption] = useState('SUP-OPT-B');
+      const [selectedPlantOption, setSelectedPlantOption] = useState('PLANT-OPT-B');
+      const [selectedWarehouseOption, setSelectedWarehouseOption] = useState('WH-OPT-A');
+      const [selectedRouteOption, setSelectedRouteOption] = useState('ROUTE-OPT-2');
+
+      const activeOrg = (companyProfile && orgRegistry && orgRegistry[companyProfile.code]) || (orgRegistry && orgRegistry['COMP-DE-900']) || ORGANIZATION_REGISTRY['COMP-DE-900'];
+
+      // Helper to switch active organisation & load only that organisation's isolated data
+      const switchOrganization = (orgId) => {
+        const org = orgRegistry[orgId] || orgRegistry['COMP-DE-900'] || ORGANIZATION_REGISTRY['COMP-DE-900'];
+        setCompanyProfile({
+          name: org.name,
+          city: org.city,
+          code: org.code,
+          industry: org.industry,
+          networkId: 'NET-' + org.code,
+          userEmail: org.userEmail,
+          userName: org.userName,
+          userRole: org.userRole
+        });
+        setNodes(org.nodes);
+        setNetworkResilienceScore(org.resilienceScore || 94);
+        setCompanyMode(org.code.startsWith('COMP-NEW') || org.code.startsWith('APEX') ? 'NEW' : 'EXISTING');
+        setActiveTab('overview');
+        setAppStage('PORTAL');
+        setToast({
+          title: 'Organization Control Tower Active',
+          message: 'Loaded isolated supply network data for ' + org.name + ' (' + org.code + ').'
+        });
+      };
 
       // Navigation State
       const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'network' | 'disruptions' | 'scenarios' | 'analytics' | 'sap_schema'
@@ -1982,7 +2425,7 @@
                         NEW COMPANY
                       </h3>
                       <p className="text-body-normal theme-text-muted">
-                        Design a resilient supply network from scratch using AI-powered planning.
+                        For new organisations that want to create their supply chain network.
                       </p>
                     </div>
 
@@ -2009,9 +2452,9 @@
                   <div className="pt-8">
                     <button
                       type="button"
-                      className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#0A6ED1] to-blue-600 hover:brightness-110 text-white font-bold text-body-normal flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 transition"
+                      className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#0A6ED1] to-blue-600 hover:brightness-110 text-white font-bold text-body-normal flex items-center justify-center gap-2 shadow-md shadow-blue-500/25 transition cursor-pointer"
                     >
-                      <span>Get Started with BUILD</span>
+                      <span>Sign Up</span>
                       <Icons.ArrowRight />
                     </button>
                   </div>
@@ -2032,7 +2475,7 @@
                         EXISTING COMPANY
                       </h3>
                       <p className="text-body-normal theme-text-muted">
-                        Monitor, analyze, and optimize your existing supply network.
+                        For organisations that already have RESILINK data.
                       </p>
                     </div>
 
@@ -2059,9 +2502,9 @@
                   <div className="pt-8">
                     <button
                       type="button"
-                      className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#107E3E] to-emerald-600 hover:brightness-110 text-white font-bold text-body-normal flex items-center justify-center gap-2 shadow-md shadow-emerald-500/25 transition"
+                      className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#107E3E] to-emerald-600 hover:brightness-110 text-white font-bold text-body-normal flex items-center justify-center gap-2 shadow-md shadow-emerald-500/25 transition cursor-pointer"
                     >
-                      <span>Sign In to Organisation SENSE</span>
+                      <span>Sign In</span>
                       <Icons.ArrowRight />
                     </button>
                   </div>
@@ -2227,12 +2670,12 @@
                   </div>
                   <div>
                     <h2 className="text-xl font-bold theme-text-main">Existing Enterprise Login</h2>
-                    <p className="text-xs theme-text-muted">Access your company's live supply network Control Tower</p>
+                    <p className="text-xs theme-text-muted">Access your organisation's live supply network Control Tower</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setAppStage('SELECTION')}
-                  className="text-xs theme-text-muted hover:theme-text-main"
+                  className="text-xs theme-text-muted hover:theme-text-main cursor-pointer"
                 >
                   ✕ Cancel
                 </button>
@@ -2240,31 +2683,18 @@
 
               {/* Demo Quick-Select Organizations */}
               <div className="space-y-2">
-                <div className="text-[11px] font-mono uppercase theme-text-muted">Demo Pre-configured Organizations:</div>
+                <div className="text-[11px] font-mono uppercase theme-text-muted">Registered Organisations:</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  {[
-                    { name: 'Global AutoTech AG', city: 'Munich, Germany', code: 'COMP-DE-900' },
-                    { name: 'Bavaria EV Motors', city: 'Stuttgart, Germany', code: 'BAV-MUC-10' }
-                  ].map(demo => (
+                  {Object.values(orgRegistry).map(demo => (
                     <button
                       key={demo.code}
                       type="button"
-                      onClick={() => {
-                        setCompanyProfile({
-                          name: demo.name,
-                          city: demo.city,
-                          code: demo.code,
-                          industry: 'Automotive & Clean Mobility',
-                          networkId: 'NET-' + demo.code
-                        });
-                        setCompanyMode('EXISTING');
-                        setActiveTab('overview');
-                        setAppStage('PORTAL');
-                      }}
-                      className="p-3 rounded-xl border theme-border theme-bg-elevated hover:border-[#107E3E] text-left transition"
+                      onClick={() => switchOrganization(demo.code)}
+                      className="p-3 rounded-xl border theme-border theme-bg-elevated hover:border-[#107E3E] text-left transition cursor-pointer group"
                     >
-                      <div className="font-bold theme-text-main">{demo.name}</div>
+                      <div className="font-bold theme-text-main group-hover:text-[#107E3E] transition-colors">{demo.name}</div>
                       <div className="text-[10px] font-mono text-[#0A6ED1]">{demo.code} • {demo.city}</div>
+                      <div className="text-[9px] font-mono text-muted mt-1">{demo.kpis ? demo.kpis.suppliers.count : '24'} Sup • {demo.kpis ? demo.kpis.plants.count : '6'} Plants</div>
                     </button>
                   ))}
                 </div>
@@ -2272,46 +2702,48 @@
 
               <div className="relative flex items-center justify-center">
                 <div className="border-t theme-border w-full"></div>
-                <span className="theme-bg-card px-2 text-[10px] font-mono theme-text-muted uppercase absolute">or enter credentials</span>
+                <span className="theme-bg-card px-2 text-[10px] font-mono theme-text-muted uppercase absolute">or login with credentials</span>
               </div>
 
               <form onSubmit={(e) => {
                 e.preventDefault();
                 const form = e.target;
-                const companyName = form.companyName.value.trim() || 'Global AutoTech AG';
                 const companyCode = form.companyCode.value.trim() || 'COMP-DE-900';
-
-                setCompanyProfile({
-                  name: companyName,
-                  city: 'Global Headquarters',
-                  code: companyCode,
-                  industry: 'Industrial Supply Chain',
-                  networkId: 'NET-' + companyCode
-                });
-
-                setCompanyMode('EXISTING');
                 setActiveTab('overview');
-                setAppStage('PORTAL');
+                switchOrganization(companyCode);
               }} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold theme-text-muted uppercase mb-1">Company Name</label>
-                  <input
-                    type="text"
-                    name="companyName"
-                    defaultValue="Global AutoTech AG"
-                    required
-                    className="w-full text-sm p-3 rounded-xl theme-bg-elevated border theme-border theme-text-main focus:outline-none focus:border-[#107E3E]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold theme-text-muted uppercase mb-1">Company Code</label>
+                  <label className="block text-xs font-semibold theme-text-muted uppercase mb-1">Company Name / ID</label>
                   <input
                     type="text"
                     name="companyCode"
                     defaultValue="COMP-DE-900"
                     required
                     className="w-full text-sm p-3 rounded-xl theme-bg-elevated border theme-border theme-text-main font-mono focus:outline-none focus:border-[#107E3E]"
+                    placeholder="e.g. COMP-DE-900 or BAV-MUC-10"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold theme-text-muted uppercase mb-1">User Email / Credentials</label>
+                  <input
+                    type="email"
+                    name="userEmail"
+                    defaultValue="pia.vp@autotech.corp"
+                    required
+                    className="w-full text-sm p-3 rounded-xl theme-bg-elevated border theme-border theme-text-main focus:outline-none focus:border-[#107E3E]"
+                    placeholder="name@enterprise.corp"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold theme-text-muted uppercase mb-1">Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    defaultValue="password123"
+                    required
+                    className="w-full text-sm p-3 rounded-xl theme-bg-elevated border theme-border theme-text-main focus:outline-none focus:border-[#107E3E]"
                   />
                 </div>
 
@@ -2319,13 +2751,13 @@
                   <button
                     type="button"
                     onClick={() => setAppStage('SELECTION')}
-                    className="px-4 py-2.5 rounded-xl border theme-border text-sm theme-text-muted hover:theme-text-main"
+                    className="px-4 py-2.5 rounded-xl border theme-border text-sm theme-text-muted hover:theme-text-main cursor-pointer"
                   >
                     Back
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#107E3E] to-emerald-600 hover:brightness-110 text-white font-bold text-sm shadow-md shadow-emerald-500/25 flex items-center gap-2"
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#107E3E] to-emerald-600 hover:brightness-110 text-white font-bold text-sm shadow-md shadow-emerald-500/25 flex items-center gap-2 cursor-pointer"
                   >
                     <span>Load Enterprise Control Tower (SENSE)</span>
                     <Icons.ArrowRight />
@@ -2753,7 +3185,7 @@
 
                   {/* STEP 2: AI SUPPLIER RECOMMENDATION */}
                   {buildStep === 2 && (
-                    <div className="theme-bg-card border theme-border rounded-2xl p-6 theme-card-shadow space-y-6">
+                    <div className="theme-bg-card border theme-border rounded-2xl p-6 theme-card-shadow space-y-6 animate-fadeIn">
                       <div className="border-b theme-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
@@ -2764,67 +3196,127 @@
                           </div>
                           <h3 className="text-lg font-bold theme-text-main mt-1">AI Supplier Recommendation</h3>
                           <p className="text-sm theme-text-muted">
-                            AI evaluated 42 tier-1 suppliers against reliability, capacity buffers, and geopolitical disruption exposure.
+                            Based on your product requirements, volume demand, and target delivery markets, AI evaluated 4 tier-1 supplier candidates.
                           </p>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-[#107E3E] font-bold text-xs font-mono border border-emerald-500/30">
+                        <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-[#107E3E] font-bold text-xs font-mono border border-emerald-500/30 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#107E3E] animate-pulse"></span>
                           Supplier Intelligence Agent Active
                         </span>
                       </div>
 
-                      {/* Recommended Supplier Card */}
-                      <div className="p-6 rounded-2xl theme-bg-elevated border-2 border-emerald-500/60 shadow-lg space-y-4">
+                      {/* Recommended Supplier Callout */}
+                      <div className="p-5 rounded-2xl theme-bg-elevated border-2 border-emerald-500/60 shadow-lg space-y-3">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div>
                             <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-[#107E3E] border border-emerald-500/40">
-                              ★ AI RECOMMENDED SUPPLIER
+                              ★ AI RECOMMENDED PRIMARY SUPPLIER
                             </span>
-                            <h4 className="text-xl font-bold theme-text-main mt-1.5">
-                              Taoyuan Precision Cathodes & Cells (DSUP-B)
+                            <h4 className="text-lg font-bold theme-text-main mt-1">
+                              Taoyuan Precision Cathodes & Cells (Supplier B)
                             </h4>
                           </div>
                           <div className="text-right font-mono">
-                            <div className="text-xs theme-text-muted">Reliability Score</div>
-                            <div className="text-lg font-bold text-[#107E3E]">97.8% On-Time</div>
+                            <div className="text-xs theme-text-muted">Reliability Benchmark</div>
+                            <div className="text-base font-bold text-[#107E3E]">95% Compliance</div>
                           </div>
                         </div>
 
-                        {/* Important Metrics Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono pt-2">
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">LOCATION</span>
-                            <span className="font-bold theme-text-main">Taoyuan, Taiwan</span>
-                          </div>
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">CAPACITY</span>
-                            <span className="font-bold text-[#0A6ED1]">120,000 units/yr</span>
-                          </div>
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">RELIABILITY</span>
-                            <span className="font-bold text-[#107E3E]">97.8% Compliance</span>
-                          </div>
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">RISK TIER</span>
-                            <span className="font-bold text-emerald-500">Low (18/100)</span>
-                          </div>
-                        </div>
-
-                        {/* Why Recommended Explanation */}
-                        <div className="p-4 rounded-xl theme-bg-card border border-emerald-500/30 space-y-1">
+                        <div className="p-3.5 rounded-xl theme-bg-card border border-emerald-500/30 space-y-1">
                           <div className="text-xs font-mono font-bold text-[#107E3E] uppercase flex items-center gap-1.5">
                             <Icons.Sparkles /> Why Recommended:
                           </div>
                           <p className="text-sm theme-text-main leading-relaxed">
-                            "Selected by <strong>Supplier Intelligence Agent</strong> because it provides high reliability with significantly lower disruption risk, dual-sourced sub-assembly buffering, and automotive AEC-Q100 zero-defect certification."
+                            "Selected because it provides the best balance between cost, capacity, and disruption risk with AEC-Q100 zero-defect certification and dual-source resilience."
                           </p>
                         </div>
+                      </div>
+
+                      {/* Supplier Alternatives Considered */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs font-mono font-bold uppercase theme-text-muted">
+                            Supplier Alternatives Considered (Click to Select Primary Supplier):
+                          </div>
+                          <span className="text-[11px] font-mono text-[#0A6ED1]">4 Candidates Evaluated</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {BUILD_SUPPLIER_OPTIONS.map(sup => {
+                            const isSelected = selectedSupplierOption === sup.id;
+                            return (
+                              <div
+                                key={sup.id}
+                                onClick={() => setSelectedSupplierOption(sup.id)}
+                                className={'p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ' + (
+                                  isSelected
+                                    ? 'border-2 border-emerald-500 bg-emerald-500/5 shadow-md -translate-y-0.5'
+                                    : 'theme-border theme-bg-card hover:border-[#0A6ED1]'
+                                )}
+                              >
+                                <div className="space-y-2.5">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="font-bold text-sm theme-text-main">{sup.name}</span>
+                                        {sup.isRecommended && (
+                                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-[#107E3E]">
+                                            AI TOP PICK
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="text-[11px] theme-text-muted mt-0.5">{sup.location}</div>
+                                    </div>
+                                    <span className={'text-[10px] font-mono font-bold px-2 py-0.5 rounded ' + (
+                                      isSelected ? 'bg-[#107E3E] text-white' : 'bg-blue-500/10 text-[#0A6ED1]'
+                                    )}>
+                                      {isSelected ? '✓ SELECTED PRIMARY' : 'SELECT'}
+                                    </span>
+                                  </div>
+
+                                  <div className="grid grid-cols-3 gap-2 text-xs font-mono pt-1">
+                                    <div className="p-2 rounded-lg theme-bg-elevated border theme-border">
+                                      <span className="text-[9px] theme-text-muted block">COST</span>
+                                      <span className="font-bold theme-text-main">{sup.costTier}</span>
+                                    </div>
+                                    <div className="p-2 rounded-lg theme-bg-elevated border theme-border">
+                                      <span className="text-[9px] theme-text-muted block">RELIABILITY</span>
+                                      <span className="font-bold text-[#107E3E]">{sup.reliability}</span>
+                                    </div>
+                                    <div className="p-2 rounded-lg theme-bg-elevated border theme-border">
+                                      <span className="text-[9px] theme-text-muted block">RISK</span>
+                                      <span className={'font-bold ' + (
+                                        sup.riskTier.includes('Low') ? 'text-emerald-500' : sup.riskTier.includes('Medium') ? 'text-amber-500' : 'text-red-500'
+                                      )}>{sup.riskTier}</span>
+                                    </div>
+                                  </div>
+
+                                  <p className="text-xs theme-text-muted leading-relaxed">
+                                    {sup.reason}
+                                  </p>
+                                </div>
+
+                                <div className="mt-3 pt-2 border-t theme-border flex items-center justify-between text-[11px] font-mono">
+                                  <span className="text-muted">Capacity: {sup.capacity}</span>
+                                  <span className="font-bold text-[#0A6ED1]">{sup.unitCost}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Agent Attribution Callout */}
+                      <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 flex items-center gap-2 text-xs font-mono text-[#0A6ED1]">
+                        <Icons.Cpu />
+                        <span>Responsible Agent: <strong>Supplier Intelligence Agent</strong> (Compare supplier options against cost, reliability, and disruption risk)</span>
                       </div>
 
                       <div className="flex items-center justify-between pt-4 border-t theme-border">
                         <button
                           type="button"
                           onClick={() => setBuildStep(1)}
-                          className="px-4 py-2.5 rounded-xl border theme-border text-sm theme-text-muted hover:theme-text-main"
+                          className="px-4 py-2.5 rounded-xl border theme-border text-sm theme-text-muted hover:theme-text-main cursor-pointer"
                         >
                           Back
                         </button>
@@ -2840,9 +3332,9 @@
                     </div>
                   )}
 
-                  {/* STEP 3: PLANT RECOMMENDATION */}
+                  {/* STEP 3: AI PLANT RECOMMENDATION */}
                   {buildStep === 3 && (
-                    <div className="theme-bg-card border theme-border rounded-2xl p-6 theme-card-shadow space-y-6">
+                    <div className="theme-bg-card border theme-border rounded-2xl p-6 theme-card-shadow space-y-6 animate-fadeIn">
                       <div className="border-b theme-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
@@ -2851,65 +3343,123 @@
                             </span>
                             <span className="text-xs font-mono font-bold text-[#7C4DFF]">Agent: Plant Optimization Agent</span>
                           </div>
-                          <h3 className="text-lg font-bold theme-text-main mt-1">Plant Recommendation</h3>
+                          <h3 className="text-lg font-bold theme-text-main mt-1">AI Plant Recommendation</h3>
                           <p className="text-sm theme-text-muted">
-                            AI analyzed regional assembly facilities for throughput, expansion headroom, and energy efficiency.
+                            AI evaluated regional manufacturing and assembly facilities for capacity, operating cost, location, and utilization.
                           </p>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-purple-500/10 text-[#7C4DFF] font-bold text-xs font-mono border border-purple-500/30">
+                        <span className="px-3 py-1 rounded-full bg-purple-500/10 text-[#7C4DFF] font-bold text-xs font-mono border border-purple-500/30 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#7C4DFF] animate-pulse"></span>
                           Plant Optimization Agent Active
                         </span>
                       </div>
 
-                      {/* Recommended Plant Card */}
-                      <div className="p-6 rounded-2xl theme-bg-elevated border-2 border-purple-500/60 shadow-lg space-y-4">
+                      {/* Recommended Plant Callout */}
+                      <div className="p-5 rounded-2xl theme-bg-elevated border-2 border-purple-500/60 shadow-lg space-y-3">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div>
                             <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-purple-500/20 text-[#7C4DFF] border border-purple-500/40">
                               ★ AI RECOMMENDED FACILITY
                             </span>
-                            <h4 className="text-xl font-bold theme-text-main mt-1.5">
+                            <h4 className="text-lg font-bold theme-text-main mt-1">
                               Wroclaw Pack Assembly Plant (Plant B)
                             </h4>
                           </div>
                           <div className="text-right font-mono">
                             <div className="text-xs theme-text-muted">Expansion Surge Headroom</div>
-                            <div className="text-lg font-bold text-[#7C4DFF]">+1,000 units/day</div>
+                            <div className="text-base font-bold text-[#7C4DFF]">+30% Standby Buffer</div>
                           </div>
                         </div>
 
-                        {/* Metrics Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono pt-2">
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">LOCATION</span>
-                            <span className="font-bold theme-text-main">Wroclaw, Poland</span>
-                          </div>
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">CAPACITY</span>
-                            <span className="font-bold text-[#7C4DFF]">18,000 units/month</span>
-                          </div>
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">BASELINE UTILIZATION</span>
-                            <span className="font-bold text-[#107E3E]">48% (Surge Capable)</span>
-                          </div>
-                        </div>
-
-                        {/* Reason */}
-                        <div className="p-4 rounded-xl theme-bg-card border border-purple-500/30 space-y-1">
+                        <div className="p-3.5 rounded-xl theme-bg-card border border-purple-500/30 space-y-1">
                           <div className="text-xs font-mono font-bold text-[#7C4DFF] uppercase flex items-center gap-1.5">
                             <Icons.Sparkles /> Reason Selected:
                           </div>
                           <p className="text-sm theme-text-main leading-relaxed">
-                            "Selected by <strong>Plant Optimization Agent</strong> for optimal proximity to Central European automotive OEMs, flexible modular tooling lines, and ample idle capacity to absorb sudden supply chain shocks."
+                            "Plant B selected because it satisfies required production capacity with lower operating cost and better logistics coverage, with +30% standby buffer headroom to absorb supply shocks."
                           </p>
                         </div>
+                      </div>
+
+                      {/* Plant Alternatives Considered */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs font-mono font-bold uppercase theme-text-muted">
+                            Plant Alternatives Considered (Click to Select Plant):
+                          </div>
+                          <span className="text-[11px] font-mono text-[#7C4DFF]">3 Facilities Evaluated</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {BUILD_PLANT_OPTIONS.map(plt => {
+                            const isSelected = selectedPlantOption === plt.id;
+                            return (
+                              <div
+                                key={plt.id}
+                                onClick={() => setSelectedPlantOption(plt.id)}
+                                className={'p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ' + (
+                                  isSelected
+                                    ? 'border-2 border-[#7C4DFF] bg-purple-500/5 shadow-md -translate-y-0.5'
+                                    : 'theme-border theme-bg-card hover:border-[#7C4DFF]'
+                                )}
+                              >
+                                <div className="space-y-2.5">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="font-bold text-sm theme-text-main">{plt.name}</span>
+                                        {plt.isRecommended && (
+                                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-[#7C4DFF]">
+                                            AI PREFERRED
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="text-[11px] theme-text-muted mt-0.5">{plt.location}</div>
+                                    </div>
+                                    <span className={'text-[10px] font-mono font-bold px-2 py-0.5 rounded ' + (
+                                      isSelected ? 'bg-[#7C4DFF] text-white' : 'bg-purple-500/10 text-[#7C4DFF]'
+                                    )}>
+                                      {isSelected ? '✓ SELECTED PLANT' : 'SELECT'}
+                                    </span>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-1">
+                                    <div className="p-2 rounded-lg theme-bg-elevated border theme-border">
+                                      <span className="text-[9px] theme-text-muted block">CAPACITY</span>
+                                      <span className="font-bold theme-text-main">{plt.capacity}</span>
+                                    </div>
+                                    <div className="p-2 rounded-lg theme-bg-elevated border theme-border">
+                                      <span className="text-[9px] theme-text-muted block">UTILIZATION</span>
+                                      <span className="font-bold text-[#107E3E]">{plt.utilization}</span>
+                                    </div>
+                                  </div>
+
+                                  <p className="text-xs theme-text-muted leading-relaxed">
+                                    {plt.reason}
+                                  </p>
+                                </div>
+
+                                <div className="mt-3 pt-2 border-t theme-border flex items-center justify-between text-[11px] font-mono">
+                                  <span className="text-muted">Cost:</span>
+                                  <span className="font-bold text-[#7C4DFF]">{plt.cost}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Agent Attribution Callout */}
+                      <div className="p-3 rounded-xl bg-purple-500/5 border border-purple-500/20 flex items-center gap-2 text-xs font-mono text-[#7C4DFF]">
+                        <Icons.Cpu />
+                        <span>Responsible Agent: <strong>Plant Optimization Agent</strong> (Evaluate plant choices, production headroom, and operating costs)</span>
                       </div>
 
                       <div className="flex items-center justify-between pt-4 border-t theme-border">
                         <button
                           type="button"
                           onClick={() => setBuildStep(2)}
-                          className="px-4 py-2.5 rounded-xl border theme-border text-sm theme-text-muted hover:theme-text-main"
+                          className="px-4 py-2.5 rounded-xl border theme-border text-sm theme-text-muted hover:theme-text-main cursor-pointer"
                         >
                           Back
                         </button>
@@ -2925,9 +3475,9 @@
                     </div>
                   )}
 
-                  {/* STEP 4: WAREHOUSE RECOMMENDATION */}
+                  {/* STEP 4: AI WAREHOUSE RECOMMENDATION */}
                   {buildStep === 4 && (
-                    <div className="theme-bg-card border theme-border rounded-2xl p-6 theme-card-shadow space-y-6">
+                    <div className="theme-bg-card border theme-border rounded-2xl p-6 theme-card-shadow space-y-6 animate-fadeIn">
                       <div className="border-b theme-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
@@ -2936,65 +3486,123 @@
                             </span>
                             <span className="text-xs font-mono font-bold text-[#107E3E]">Agent: Warehouse Optimization Agent</span>
                           </div>
-                          <h3 className="text-lg font-bold theme-text-main mt-1">Warehouse Recommendation</h3>
+                          <h3 className="text-lg font-bold theme-text-main mt-1">AI Warehouse Recommendation</h3>
                           <p className="text-sm theme-text-muted">
-                            AI evaluated strategic distribution hubs for decoupled buffer storage and rapid regional dispatch.
+                            AI analyzed regional consolidation centers considering storage capacity, distance to customers, delivery SLA, and operating cost.
                           </p>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-[#107E3E] font-bold text-xs font-mono border border-emerald-500/30">
+                        <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-[#107E3E] font-bold text-xs font-mono border border-emerald-500/30 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#107E3E] animate-pulse"></span>
                           Warehouse Optimization Agent Active
                         </span>
                       </div>
 
-                      {/* Recommended Warehouse Card */}
-                      <div className="p-6 rounded-2xl theme-bg-elevated border-2 border-emerald-500/60 shadow-lg space-y-4">
+                      {/* Recommended Warehouse Callout */}
+                      <div className="p-5 rounded-2xl theme-bg-elevated border-2 border-emerald-500/60 shadow-lg space-y-3">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div>
                             <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-[#107E3E] border border-emerald-500/40">
                               ★ AI RECOMMENDED DISTRIBUTION HUB
                             </span>
-                            <h4 className="text-xl font-bold theme-text-main mt-1.5">
-                              Central European Logistics Hub (Warehouse X)
+                            <h4 className="text-lg font-bold theme-text-main mt-1">
+                              Central European Logistics Hub (Warehouse A)
                             </h4>
                           </div>
                           <div className="text-right font-mono">
                             <div className="text-xs theme-text-muted">Strategic Safety Buffer</div>
-                            <div className="text-lg font-bold text-[#107E3E]">12,000 Pallets</div>
+                            <div className="text-base font-bold text-[#107E3E]">12,000 Pallets</div>
                           </div>
                         </div>
 
-                        {/* Metrics Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono pt-2">
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">LOCATION</span>
-                            <span className="font-bold theme-text-main">Rotterdam, Netherlands</span>
-                          </div>
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">STORAGE CAPACITY</span>
-                            <span className="font-bold text-[#107E3E]">35,000 Pallets</span>
-                          </div>
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">DELIVERY COVERAGE</span>
-                            <span className="font-bold text-[#0A6ED1]">Pan-European Same-Day SLA</span>
-                          </div>
-                        </div>
-
-                        {/* Reason */}
-                        <div className="p-4 rounded-xl theme-bg-card border border-emerald-500/30 space-y-1">
+                        <div className="p-3.5 rounded-xl theme-bg-card border border-emerald-500/30 space-y-1">
                           <div className="text-xs font-mono font-bold text-[#107E3E] uppercase flex items-center gap-1.5">
                             <Icons.Sparkles /> Reason Selected:
                           </div>
                           <p className="text-sm theme-text-main leading-relaxed">
-                            "Selected by <strong>Warehouse Optimization Agent</strong> for deepwater port access, high-bay automated buffer storage, and direct electrified rail connection to both plants and end-customer manufacturing centers."
+                            "Selected by <strong>Warehouse Optimization Agent</strong> for deepwater port access, high-bay automated buffer storage, and direct electrified rail connection ensuring 98%+ SLA fulfillment."
                           </p>
                         </div>
+                      </div>
+
+                      {/* Warehouse Alternatives Considered */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs font-mono font-bold uppercase theme-text-muted">
+                            Warehouse Alternatives Considered (Click to Select Warehouse):
+                          </div>
+                          <span className="text-[11px] font-mono text-[#107E3E]">4 Hubs Evaluated</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {BUILD_WAREHOUSE_OPTIONS.map(wh => {
+                            const isSelected = selectedWarehouseOption === wh.id;
+                            return (
+                              <div
+                                key={wh.id}
+                                onClick={() => setSelectedWarehouseOption(wh.id)}
+                                className={'p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ' + (
+                                  isSelected
+                                    ? 'border-2 border-emerald-500 bg-emerald-500/5 shadow-md -translate-y-0.5'
+                                    : 'theme-border theme-bg-card hover:border-[#107E3E]'
+                                )}
+                              >
+                                <div className="space-y-2.5">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="font-bold text-sm theme-text-main">{wh.name}</span>
+                                        {wh.isRecommended && (
+                                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-[#107E3E]">
+                                            AI TOP PICK
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="text-[11px] theme-text-muted mt-0.5">{wh.location}</div>
+                                    </div>
+                                    <span className={'text-[10px] font-mono font-bold px-2 py-0.5 rounded ' + (
+                                      isSelected ? 'bg-[#107E3E] text-white' : 'bg-emerald-500/10 text-[#107E3E]'
+                                    )}>
+                                      {isSelected ? '✓ SELECTED WAREHOUSE' : 'SELECT'}
+                                    </span>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-1">
+                                    <div className="p-2 rounded-lg theme-bg-elevated border theme-border">
+                                      <span className="text-[9px] theme-text-muted block">STORAGE</span>
+                                      <span className="font-bold theme-text-main">{wh.storageCapacity}</span>
+                                    </div>
+                                    <div className="p-2 rounded-lg theme-bg-elevated border theme-border">
+                                      <span className="text-[9px] theme-text-muted block">DELIVERY SLA</span>
+                                      <span className="font-bold text-[#107E3E]">{wh.deliverySLA}</span>
+                                    </div>
+                                  </div>
+
+                                  <p className="text-xs theme-text-muted leading-relaxed">
+                                    {wh.reason}
+                                  </p>
+                                </div>
+
+                                <div className="mt-3 pt-2 border-t theme-border flex items-center justify-between text-[11px] font-mono">
+                                  <span className="text-muted">Distance: {wh.distanceToCustomers}</span>
+                                  <span className="font-bold text-[#107E3E]">{wh.operatingCost}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Agent Attribution Callout */}
+                      <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex items-center gap-2 text-xs font-mono text-[#107E3E]">
+                        <Icons.Cpu />
+                        <span>Responsible Agent: <strong>Warehouse Optimization Agent</strong> (Evaluate warehouse placement, buffer storage, and customer proximity)</span>
                       </div>
 
                       <div className="flex items-center justify-between pt-4 border-t theme-border">
                         <button
                           type="button"
                           onClick={() => setBuildStep(3)}
-                          className="px-4 py-2.5 rounded-xl border theme-border text-sm theme-text-muted hover:theme-text-main"
+                          className="px-4 py-2.5 rounded-xl border theme-border text-sm theme-text-muted hover:theme-text-main cursor-pointer"
                         >
                           Back
                         </button>
@@ -3012,7 +3620,7 @@
 
                   {/* STEP 5: LOGISTICS ROUTE RECOMMENDATION */}
                   {buildStep === 5 && (
-                    <div className="theme-bg-card border theme-border rounded-2xl p-6 theme-card-shadow space-y-6">
+                    <div className="theme-bg-card border theme-border rounded-2xl p-6 theme-card-shadow space-y-6 animate-fadeIn">
                       <div className="border-b theme-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
@@ -3023,63 +3631,125 @@
                           </div>
                           <h3 className="text-lg font-bold theme-text-main mt-1">Logistics Route Recommendation</h3>
                           <p className="text-sm theme-text-muted">
-                            AI evaluated freight transit times, carbon footprint, and chokepoint congestion risks.
+                            AI compared transit time, freight cost, congestion risk, and reliability across multimodal shipping lanes.
                           </p>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-blue-500/10 text-[#0A6ED1] font-bold text-xs font-mono border border-blue-500/30">
+                        <span className="px-3 py-1 rounded-full bg-blue-500/10 text-[#0A6ED1] font-bold text-xs font-mono border border-blue-500/30 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#0A6ED1] animate-pulse"></span>
                           Logistics Intelligence Agent Active
                         </span>
                       </div>
 
-                      {/* Recommended Route Card */}
-                      <div className="p-6 rounded-2xl theme-bg-elevated border-2 border-blue-500/60 shadow-lg space-y-4">
+                      {/* Recommended Route Callout */}
+                      <div className="p-5 rounded-2xl theme-bg-elevated border-2 border-blue-500/60 shadow-lg space-y-3">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div>
                             <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-blue-500/20 text-[#0A6ED1] border border-blue-500/40">
                               ★ AI RECOMMENDED ROUTE CORRIDOR
                             </span>
-                            <h4 className="text-xl font-bold theme-text-main mt-1.5">
-                              Route 3: Hybrid Multimodal Coastal Rail + Express Fast-Sea
+                            <h4 className="text-lg font-bold theme-text-main mt-1">
+                              Hybrid Multimodal Coastal Rail + Express Fast-Sea (Route 2)
                             </h4>
                           </div>
                           <div className="text-right font-mono">
                             <div className="text-xs theme-text-muted">Delivery SLA</div>
-                            <div className="text-lg font-bold text-[#0A6ED1]">14 Days Guaranteed</div>
+                            <div className="text-base font-bold text-[#0A6ED1]">14 Days Guaranteed</div>
                           </div>
                         </div>
 
-                        {/* Metrics Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono pt-2">
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">TRANSIT TIME</span>
-                            <span className="font-bold text-amber-500">14 Days (±1.2d variance)</span>
-                          </div>
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">LANDED FREIGHT COST</span>
-                            <span className="font-bold text-emerald-500">$142 / unit</span>
-                          </div>
-                          <div className="p-3 rounded-xl theme-bg-card border theme-border">
-                            <span className="text-[10px] theme-text-muted block">CONGESTION RISK</span>
-                            <span className="font-bold text-[#107E3E]">Low (Bypasses Chokepoints)</span>
-                          </div>
-                        </div>
-
-                        {/* Reason */}
-                        <div className="p-4 rounded-xl theme-bg-card border border-blue-500/30 space-y-1">
+                        <div className="p-3.5 rounded-xl theme-bg-card border border-blue-500/30 space-y-1">
                           <div className="text-xs font-mono font-bold text-[#0A6ED1] uppercase flex items-center gap-1.5">
                             <Icons.Sparkles /> Reason Selected:
                           </div>
                           <p className="text-sm theme-text-main leading-relaxed">
-                            "Selected by <strong>Logistics Intelligence Agent</strong> to bypass high-risk maritime canal bottlenecks, reducing transit dwell exposure by 42% while providing predictable electrified rail connections directly to European plants."
+                            "Selected by <strong>Logistics Intelligence Agent</strong> to bypass maritime chokepoints, reducing transit dwell by 42% with predictable rail connections."
                           </p>
                         </div>
+                      </div>
+
+                      {/* Route Choices Considered */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs font-mono font-bold uppercase theme-text-muted">
+                            Route Choices Considered (Click to Select Logistics Route):
+                          </div>
+                          <span className="text-[11px] font-mono text-[#0A6ED1]">4 Corridors Evaluated</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {BUILD_ROUTE_OPTIONS.map(rt => {
+                            const isSelected = selectedRouteOption === rt.id;
+                            return (
+                              <div
+                                key={rt.id}
+                                onClick={() => setSelectedRouteOption(rt.id)}
+                                className={'p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ' + (
+                                  isSelected
+                                    ? 'border-2 border-[#0A6ED1] bg-blue-500/5 shadow-md -translate-y-0.5'
+                                    : 'theme-border theme-bg-card hover:border-[#0A6ED1]'
+                                )}
+                              >
+                                <div className="space-y-2.5">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="font-bold text-sm theme-text-main">{rt.name}</span>
+                                        {rt.isRecommended && (
+                                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-[#0A6ED1]">
+                                            AI PREFERRED
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="text-[11px] theme-text-muted mt-0.5">{rt.mode}</div>
+                                    </div>
+                                    <span className={'text-[10px] font-mono font-bold px-2 py-0.5 rounded ' + (
+                                      isSelected ? 'bg-[#0A6ED1] text-white' : 'bg-blue-500/10 text-[#0A6ED1]'
+                                    )}>
+                                      {isSelected ? '✓ SELECTED ROUTE' : 'SELECT'}
+                                    </span>
+                                  </div>
+
+                                  <div className="grid grid-cols-3 gap-2 text-xs font-mono pt-1">
+                                    <div className="p-2 rounded-lg theme-bg-elevated border theme-border">
+                                      <span className="text-[9px] theme-text-muted block">TRANSIT</span>
+                                      <span className="font-bold text-amber-500">{rt.transitTime}</span>
+                                    </div>
+                                    <div className="p-2 rounded-lg theme-bg-elevated border theme-border">
+                                      <span className="text-[9px] theme-text-muted block">RELIABILITY</span>
+                                      <span className="font-bold text-[#107E3E]">{rt.reliability}</span>
+                                    </div>
+                                    <div className="p-2 rounded-lg theme-bg-elevated border theme-border">
+                                      <span className="text-[9px] theme-text-muted block">RISK</span>
+                                      <span className="font-bold theme-text-main truncate">{rt.risk}</span>
+                                    </div>
+                                  </div>
+
+                                  <p className="text-xs theme-text-muted leading-relaxed">
+                                    {rt.reason}
+                                  </p>
+                                </div>
+
+                                <div className="mt-3 pt-2 border-t theme-border flex items-center justify-between text-[11px] font-mono">
+                                  <span className="text-muted">Landed Cost:</span>
+                                  <span className="font-bold text-[#0A6ED1]">{rt.cost}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Agent Attribution Callout */}
+                      <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 flex items-center gap-2 text-xs font-mono text-[#0A6ED1]">
+                        <Icons.Cpu />
+                        <span>Responsible Agent: <strong>Logistics Intelligence Agent</strong> (Evaluate routes, transit duration, and container dwell risks)</span>
                       </div>
 
                       <div className="flex items-center justify-between pt-4 border-t theme-border">
                         <button
                           type="button"
                           onClick={() => setBuildStep(4)}
-                          className="px-4 py-2.5 rounded-xl border theme-border text-sm theme-text-muted hover:theme-text-main"
+                          className="px-4 py-2.5 rounded-xl border theme-border text-sm theme-text-muted hover:theme-text-main cursor-pointer"
                         >
                           Back
                         </button>
@@ -3097,7 +3767,7 @@
 
                   {/* STEP 6: FINAL NETWORK CREATION */}
                   {buildStep === 6 && (
-                    <div className="theme-bg-card border theme-border rounded-2xl p-6 theme-card-shadow space-y-6">
+                    <div className="theme-bg-card border theme-border rounded-2xl p-6 theme-card-shadow space-y-6 animate-fadeIn">
                       <div className="border-b theme-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-2">
@@ -3108,7 +3778,7 @@
                           </div>
                           <h3 className="text-lg font-bold theme-text-main mt-1">Final Network Creation</h3>
                           <p className="text-sm theme-text-muted">
-                            Complete digital twin architecture synthesized and verified for production deployment.
+                            Network created successfully. Complete digital twin architecture synthesized and verified for production deployment.
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -3119,39 +3789,60 @@
                         </div>
                       </div>
 
-                      {/* Visual Flow: Dynamically Generated from Selections */}
+                      {/* 4 Summary Badges */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
+                        <div className="p-3 rounded-xl theme-bg-elevated border theme-border">
+                          <span className="text-[10px] theme-text-muted uppercase block">Resilience Score</span>
+                          <span className="text-lg font-bold text-[#107E3E]">94%</span>
+                        </div>
+                        <div className="p-3 rounded-xl theme-bg-elevated border theme-border">
+                          <span className="text-[10px] theme-text-muted uppercase block">Cost Estimate</span>
+                          <span className="text-lg font-bold theme-text-main">€2.18M / yr</span>
+                        </div>
+                        <div className="p-3 rounded-xl theme-bg-elevated border theme-border">
+                          <span className="text-[10px] theme-text-muted uppercase block">Risk Score</span>
+                          <span className="text-lg font-bold text-emerald-500">Low (14/100)</span>
+                        </div>
+                        <div className="p-3 rounded-xl theme-bg-elevated border theme-border">
+                          <span className="text-[10px] theme-text-muted uppercase block">Coverage</span>
+                          <span className="text-lg font-bold text-[#0A6ED1]">98.2% EU & Global SLA</span>
+                        </div>
+                      </div>
+
+                      {/* Synthesized Echelon Flow: Supplier ↓ Plant ↓ Warehouse ↓ Route ↓ Customer */}
                       {(() => {
-                        const dynamicSup = BUILD_CANDIDATE_ENTITIES.find(c => c.id === selectedPrimarySupplier) || BUILD_CANDIDATE_ENTITIES[1] || BUILD_CANDIDATE_ENTITIES[0];
-                        const dynamicPlant = BUILD_CANDIDATE_ENTITIES.find(c => c.id === selectedPrimaryPlant) || BUILD_CANDIDATE_ENTITIES[3] || BUILD_CANDIDATE_ENTITIES[0];
-                        const dynamicWh = BUILD_CANDIDATE_ENTITIES.find(c => c.id === (selectedWarehouses && selectedWarehouses[0])) || BUILD_CANDIDATE_ENTITIES[6] || BUILD_CANDIDATE_ENTITIES[0];
-                        const targetMarketName = (designInputs.targetMarkets && designInputs.targetMarkets[0]) || 'Europe & India';
+                        const dynamicSup = BUILD_SUPPLIER_OPTIONS.find(c => c.id === selectedSupplierOption) || BUILD_CANDIDATE_ENTITIES.find(c => c.id === selectedPrimarySupplier) || BUILD_SUPPLIER_OPTIONS[1];
+                        const dynamicPlant = BUILD_PLANT_OPTIONS.find(c => c.id === selectedPlantOption) || BUILD_CANDIDATE_ENTITIES.find(c => c.id === selectedPrimaryPlant) || BUILD_PLANT_OPTIONS[1];
+                        const dynamicWh = BUILD_WAREHOUSE_OPTIONS.find(c => c.id === selectedWarehouseOption) || BUILD_CANDIDATE_ENTITIES.find(c => c.id === (selectedWarehouses && selectedWarehouses[0])) || BUILD_WAREHOUSE_OPTIONS[0];
+                        const dynamicRoute = BUILD_ROUTE_OPTIONS.find(c => c.id === selectedRouteOption) || BUILD_ROUTE_OPTIONS[1];
+                        const targetMarketName = (designInputs.targetMarkets && designInputs.targetMarkets[0]) || 'Europe & Global';
 
                         return (
                           <div className="p-6 rounded-2xl theme-bg-elevated border theme-border space-y-4">
-                            <div className="text-xs font-mono uppercase font-bold text-muted flex items-center justify-between">
-                              <span>Synthesized Supply Network Architecture</span>
+                            <div className="text-xs font-mono uppercase font-bold theme-text-muted flex items-center justify-between">
+                              <span>Synthesized Supply Network Architecture (Supplier ↓ Plant ↓ Warehouse ↓ Route ↓ Customer)</span>
                               <span className="text-emerald-600 dark:text-emerald-400 font-bold">● Active Digital Twin</span>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 relative text-center">
                               <div className="p-3.5 rounded-xl theme-bg-card border border-emerald-500/40 space-y-1">
                                 <div className="text-[10px] font-mono text-muted uppercase">1. SUPPLIER</div>
                                 <div className="font-bold text-xs theme-text-main truncate" title={dynamicSup.name}>{dynamicSup.name.split(' (')[0]}</div>
-                                <div className="text-[10px] text-emerald-500 font-mono truncate">{designInputs.product || 'Cathode Cells'}</div>
+                                <div className="text-[10px] text-emerald-500 font-mono truncate">{dynamicSup.location}</div>
                               </div>
                               <div className="p-3.5 rounded-xl theme-bg-card border border-purple-500/40 space-y-1">
                                 <div className="text-[10px] font-mono text-muted uppercase">2. PLANT</div>
                                 <div className="font-bold text-xs theme-text-main truncate" title={dynamicPlant.name}>{dynamicPlant.name.split(' (')[0]}</div>
-                                <div className="text-[10px] text-purple-500 font-mono truncate">{plantSplitPct}% Allocation</div>
+                                <div className="text-[10px] text-purple-500 font-mono truncate">{dynamicPlant.capacity}</div>
                               </div>
                               <div className="p-3.5 rounded-xl theme-bg-card border border-emerald-500/40 space-y-1">
                                 <div className="text-[10px] font-mono text-muted uppercase">3. WAREHOUSE</div>
                                 <div className="font-bold text-xs theme-text-main truncate" title={dynamicWh.name}>{dynamicWh.name.split(' (')[0]}</div>
-                                <div className="text-[10px] text-[#107E3E] font-mono truncate">Buffer Stock Active</div>
+                                <div className="text-[10px] text-[#107E3E] font-mono truncate">{dynamicWh.deliverySLA}</div>
                               </div>
                               <div className="p-3.5 rounded-xl theme-bg-card border border-blue-500/40 space-y-1">
                                 <div className="text-[10px] font-mono text-muted uppercase">4. ROUTE</div>
-                                <div className="font-bold text-xs theme-text-main truncate">Express Corridor</div>
-                                <div className="text-[10px] text-[#0A6ED1] font-mono truncate">14 Days SLA</div>
+                                <div className="font-bold text-xs theme-text-main truncate" title={dynamicRoute.name}>{dynamicRoute.mode}</div>
+                                <div className="text-[10px] text-[#0A6ED1] font-mono truncate">{dynamicRoute.transitTime}</div>
                               </div>
                               <div className="p-3.5 rounded-xl theme-bg-card border border-cyan-500/40 space-y-1">
                                 <div className="text-[10px] font-mono text-muted uppercase">5. CUSTOMER</div>
@@ -3163,17 +3854,40 @@
                         );
                       })()}
 
-                      {/* AI Network Summary & Verification */}
-                      <div className="p-4 rounded-xl theme-bg-card border border-emerald-500/40 space-y-2">
-                        <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#107E3E] uppercase">
-                          <Icons.CheckCircle2 /> AI Multi-Agent Recommendation & Governance:
+                      {/* AI Agent Responsibility Grid */}
+                      <div className="p-4 rounded-xl theme-bg-card border theme-border space-y-3">
+                        <div className="text-xs font-mono font-bold uppercase theme-text-muted">
+                          AI Agent Responsibility & Autonomous Coordination:
                         </div>
-                        <p className="text-sm theme-text-main leading-relaxed">
-                          "The <strong>Network Intelligence Agent</strong> and <strong>Risk Intelligence Agent</strong> have benchmarked this digital twin in SAP HANA Cloud. The architecture eliminates single-point bottlenecks, ensures guaranteed buffer capacity across Europe, and delivers a <strong>94% resilience score</strong> with a 98.2% on-time SLA confidence."
-                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                          <div className="p-2.5 rounded-lg theme-bg-elevated border theme-border space-y-1">
+                            <span className="font-bold text-[#0A6ED1] block font-mono">Supplier Intelligence Agent:</span>
+                            <span className="theme-text-muted text-[11px]">Compare supplier options & certify AEC-Q100 zero-defect quality.</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg theme-bg-elevated border theme-border space-y-1">
+                            <span className="font-bold text-[#7C4DFF] block font-mono">Plant Optimization Agent:</span>
+                            <span className="theme-text-muted text-[11px]">Evaluate plant choices, modular line tooling & surge headroom.</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg theme-bg-elevated border theme-border space-y-1">
+                            <span className="font-bold text-[#107E3E] block font-mono">Warehouse Optimization Agent:</span>
+                            <span className="theme-text-muted text-[11px]">Evaluate warehouse placement & decoupled automated buffers.</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg theme-bg-elevated border theme-border space-y-1">
+                            <span className="font-bold text-blue-500 block font-mono">Logistics Intelligence Agent:</span>
+                            <span className="theme-text-muted text-[11px]">Evaluate routes & bypass maritime chokepoints.</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg theme-bg-elevated border theme-border space-y-1">
+                            <span className="font-bold text-emerald-500 block font-mono">Risk Intelligence Agent:</span>
+                            <span className="theme-text-muted text-[11px]">Calculate resilience & stress-test network against disruption.</span>
+                          </div>
+                          <div className="p-2.5 rounded-lg theme-bg-elevated border theme-border space-y-1">
+                            <span className="font-bold text-cyan-500 block font-mono">Network Intelligence Agent:</span>
+                            <span className="theme-text-muted text-[11px]">Create final digital twin and register in SAP HANA Cloud.</span>
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Action Handover Button */}
+                      {/* Action Handover Button: Creates new isolated organisation dashboard */}
                       <div className="flex items-center justify-between pt-4 border-t theme-border">
                         <button
                           type="button"
@@ -3185,21 +3899,153 @@
                         <button
                           type="button"
                           onClick={() => {
+                            const chosenSup = BUILD_SUPPLIER_OPTIONS.find(s => s.id === selectedSupplierOption) || BUILD_SUPPLIER_OPTIONS[1];
+                            const chosenPlt = BUILD_PLANT_OPTIONS.find(p => p.id === selectedPlantOption) || BUILD_PLANT_OPTIONS[1];
+                            const chosenWh = BUILD_WAREHOUSE_OPTIONS.find(w => w.id === selectedWarehouseOption) || BUILD_WAREHOUSE_OPTIONS[0];
+                            const chosenRt = BUILD_ROUTE_OPTIONS.find(r => r.id === selectedRouteOption) || BUILD_ROUTE_OPTIONS[1];
+                            const newOrgCode = companyProfile.code || 'COMP-NEW-' + Math.floor(100 + Math.random() * 900);
+                            const targetMarket = (designInputs.targetMarkets && designInputs.targetMarkets[0]) || 'Europe & Global';
+
+                            const newNodes = [
+                              {
+                                id: chosenSup.id,
+                                name: chosenSup.name,
+                                category: 'Tier-1 Supplier',
+                                location: chosenSup.location,
+                                country: chosenSup.country,
+                                status: 'OPERATIONAL',
+                                capacity: 100,
+                                baselineCapacity: 100,
+                                reliability: chosenSup.reliability,
+                                leadTime: chosenSup.leadTimeDays + ' Days SLA',
+                                material: designInputs.product || 'High-Energy Cathode Cells',
+                                sapPo: 'PO-' + newOrgCode + '-01',
+                                sapStorageLoc: 'SLOC_' + chosenSup.id,
+                                riskScore: chosenSup.riskScore,
+                                activeDeficit: '0 units',
+                                x: 100,
+                                y: 200,
+                                color: '#107E3E'
+                              },
+                              {
+                                id: chosenPlt.id,
+                                name: chosenPlt.name,
+                                category: 'Manufacturing Plant',
+                                location: chosenPlt.location,
+                                country: chosenPlt.country,
+                                status: 'OPERATIONAL',
+                                capacity: 92,
+                                baselineCapacity: 100,
+                                productionCapacity: chosenPlt.capacity,
+                                currentUtilization: chosenPlt.utilization,
+                                handledOrders: 'Primary Assembly Line',
+                                activeOrders: 6,
+                                leadTime: chosenPlt.leadTimeDays + ' Days',
+                                material: 'Finished Battery Units',
+                                sapPlantCode: 'PLANT_' + newOrgCode,
+                                sapStorageLoc: 'SLOC_PROD_01',
+                                riskScore: '14/100',
+                                activeDeficit: '0 units',
+                                x: 370,
+                                y: 200,
+                                color: '#7C4DFF'
+                              },
+                              {
+                                id: chosenWh.id,
+                                name: chosenWh.name,
+                                category: 'Consolidation Center',
+                                location: chosenWh.location,
+                                country: chosenWh.country,
+                                status: 'OPERATIONAL',
+                                capacity: 95,
+                                availableStock: chosenWh.bufferReserve || 'Buffer Stock Active',
+                                inventoryBuffer: chosenWh.bufferReserve || 'Strategic Safety Reserve',
+                                bufferCapacity: chosenWh.storageCapacity,
+                                slaPurity: chosenWh.deliverySLA,
+                                leadTime: '1.5 Days',
+                                material: 'Cross-Dock Finished Inventory',
+                                sapLocation: 'SLOC_WH_' + newOrgCode,
+                                riskScore: '12/100',
+                                x: 640,
+                                y: 200,
+                                color: '#0A6ED1'
+                              },
+                              {
+                                id: 'DIST-' + newOrgCode,
+                                name: 'Customer Delivery Endpoints (' + targetMarket + ')',
+                                category: 'Market Endpoints',
+                                location: (designInputs.targetMarkets && designInputs.targetMarkets.join(', ')) || 'Central Europe',
+                                country: 'EU',
+                                status: 'OPERATIONAL',
+                                capacity: 98,
+                                pendingCommitments: 'All Baseline Orders Fulfillable (99% SLA)',
+                                sapContractGroup: 'CTR_' + newOrgCode + '_2026',
+                                riskScore: '8/100',
+                                x: 910,
+                                y: 200,
+                                color: '#107E3E'
+                              }
+                            ];
+
+                            const newRegisteredOrg = {
+                              id: newOrgCode,
+                              name: companyProfile.name || 'NextGen Mobility Solutions',
+                              city: companyProfile.city || 'Frankfurt, Germany',
+                              code: newOrgCode,
+                              industry: companyProfile.industry || 'Clean Mobility & Battery Tech',
+                              userEmail: companyProfile.email || 'sc.lead@' + newOrgCode.toLowerCase() + '.corp',
+                              password: 'password123',
+                              userName: 'Operations Lead',
+                              userRole: 'Supply Chain Architect',
+                              resilienceScore: 94,
+                              kpis: {
+                                suppliers: { count: '1 Primary (+3 Dual-Source)', status: 'Active', trend: '↑ AI Optimized' },
+                                plants: { count: '1 Facility', status: 'Optimal', cap: chosenPlt.utilization + ' Cap' },
+                                warehouses: { count: '1 Hub', status: 'Connected', stock: '100% Online' },
+                                inventory: { count: '94%', status: 'Available', trend: '↑ +5.0% buffer' },
+                                orders: { count: '240', status: 'Active', trend: '100% on track' },
+                                shipments: { count: '99%', status: 'On-Time', trend: chosenRt.transitTime + ' SLA' }
+                              },
+                              analytics: {
+                                stock: 9500,
+                                demand: 8200,
+                                activeOrders: 240,
+                                completedOrders: 230,
+                                pendingOrders: 10,
+                                delayedOrders: 0,
+                                deliveredShipments: 45,
+                                inTransitShipments: 12,
+                                delayedShipments: 0
+                              },
+                              nodes: newNodes
+                            };
+
+                            setOrgRegistry(prev => {
+                              const updated = { ...prev, [newOrgCode]: newRegisteredOrg };
+                              try {
+                                localStorage.setItem('resilink_org_registry', JSON.stringify(updated));
+                              } catch(e) {}
+                              return updated;
+                            });
+
+                            setCompanyProfile({
+                              name: newRegisteredOrg.name,
+                              city: newRegisteredOrg.city,
+                              code: newRegisteredOrg.code,
+                              industry: newRegisteredOrg.industry,
+                              networkId: 'NET-' + newRegisteredOrg.code,
+                              userEmail: newRegisteredOrg.userEmail,
+                              userName: newRegisteredOrg.userName,
+                              userRole: newRegisteredOrg.userRole
+                            });
+
+                            setNodes(newNodes);
                             setCompanyMode('NEW');
                             setNetworkResilienceScore(94);
-                            syncNetworkFromBuild(
-                              selectedPrimarySupplier,
-                              selectedStandbySupplier,
-                              selectedPrimaryPlant,
-                              selectedSecondaryPlant,
-                              plantSplitPct,
-                              selectedWarehouses,
-                              designInputs.demandVolume
-                            );
                             setActiveTab('overview');
                             setToast({
-                              title: 'Network Design Committed to Baseline',
-                              message: 'Digital twin synthesized in SAP HANA Cloud. Transferred to Organisation Control Tower Dashboard.'
+                              title: 'Organisation Control Tower Initialized',
+                              message: 'Generated isolated dashboard for ' + newRegisteredOrg.name + ' using selected network.'
                             });
                           }}
                           className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-[#107E3E] hover:brightness-110 text-white font-bold text-sm shadow-xl shadow-emerald-500/25 flex items-center gap-2 cursor-pointer"
@@ -3210,6 +4056,7 @@
                       </div>
                     </div>
                   )}
+
 
                 </div>
               )}
@@ -3325,7 +4172,7 @@
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-[#107E3E]">Active</span>
                       </div>
                       <div className="my-2">
-                        <div className="text-2xl font-bold font-mono theme-text-main">24</div>
+                        <div className="text-2xl font-bold font-mono theme-text-main">{activeOrg.kpis ? activeOrg.kpis.suppliers.count : '24'}</div>
                         <div className="text-xs font-medium theme-text-muted">Total Suppliers</div>
                       </div>
                       <div className="text-[11px] font-mono text-[#0A6ED1] flex items-center justify-between pt-1 border-t theme-border mt-1">
@@ -3345,7 +4192,7 @@
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-[#107E3E]">Optimal</span>
                       </div>
                       <div className="my-2">
-                        <div className="text-2xl font-bold font-mono theme-text-main">6</div>
+                        <div className="text-2xl font-bold font-mono theme-text-main">{activeOrg.kpis ? activeOrg.kpis.plants.count : '6'}</div>
                         <div className="text-xs font-medium theme-text-muted">Active Plants</div>
                       </div>
                       <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center justify-between pt-1 border-t theme-border mt-1">
@@ -3365,7 +4212,7 @@
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/10 text-[#0A6ED1]">Connected</span>
                       </div>
                       <div className="my-2">
-                        <div className="text-2xl font-bold font-mono theme-text-main">8</div>
+                        <div className="text-2xl font-bold font-mono theme-text-main">{activeOrg.kpis ? activeOrg.kpis.warehouses.count : '8'}</div>
                         <div className="text-xs font-medium theme-text-muted">Warehouse Network</div>
                       </div>
                       <div className="text-[11px] font-mono text-[#107E3E] flex items-center justify-between pt-1 border-t theme-border mt-1">
@@ -3385,7 +4232,7 @@
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-[#107E3E]">Available</span>
                       </div>
                       <div className="my-2">
-                        <div className="text-2xl font-bold font-mono theme-text-main">92%</div>
+                        <div className="text-2xl font-bold font-mono theme-text-main">{activeOrg.kpis ? activeOrg.kpis.inventory.count : '92%'}</div>
                         <div className="text-xs font-medium theme-text-muted">Inventory Availability</div>
                       </div>
                       <div className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center justify-between pt-1 border-t theme-border mt-1">
@@ -3405,7 +4252,7 @@
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-600">In Progress</span>
                       </div>
                       <div className="my-2">
-                        <div className="text-2xl font-bold font-mono theme-text-main">1,240</div>
+                        <div className="text-2xl font-bold font-mono theme-text-main">{activeOrg.kpis ? activeOrg.kpis.orders.count : '1,240'}</div>
                         <div className="text-xs font-medium theme-text-muted">Active Orders</div>
                       </div>
                       <div className="text-[11px] font-mono text-amber-600 dark:text-amber-400 flex items-center justify-between pt-1 border-t theme-border mt-1">
@@ -3425,7 +4272,7 @@
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-[#107E3E]">On-Time</span>
                       </div>
                       <div className="my-2">
-                        <div className="text-2xl font-bold font-mono theme-text-main">96%</div>
+                        <div className="text-2xl font-bold font-mono theme-text-main">{activeOrg.kpis ? activeOrg.kpis.shipments.count : '96%'}</div>
                         <div className="text-xs font-medium theme-text-muted">Shipment Status</div>
                       </div>
                       <div className="text-[11px] font-mono text-[#107E3E] flex items-center justify-between pt-1 border-t theme-border mt-1">
