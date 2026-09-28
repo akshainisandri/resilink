@@ -4,14 +4,6 @@
     "srv": "srv",
     "app": "app"
   },
-  "requires": {
-    "db": {
-      "kind": "sqlite",
-      "credentials": {
-        "url": ":memory:"
-      }
-    }
-  },
   "server": {
     "index": true
   }

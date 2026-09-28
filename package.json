@@ -20,14 +20,6 @@
     "deploy": "cds deploy --to sqlite:sqlite.db"
   },
   "cds": {
-    "requires": {
-      "db": {
-        "kind": "sqlite",
-        "credentials": {
-          "url": ":memory:"
-        }
-      }
-    },
     "server": {
       "index": true
     }

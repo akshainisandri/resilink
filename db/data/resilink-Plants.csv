@@ -1,5 +1,5 @@
-ID;name;location;country;productionCapacity;utilizationPct;leadTimeDays;riskScore;status
-PLANT-A;Pune Battery Module Facility;Pune;IN;12000;94.50;6;MED;BOTTLENECKED
-PLANT-B;Wroclaw Pack Assembly Plant;Wroclaw;PL;18000;48.00;4;LOW;OPERATIONAL
-PLANT-C;Munich Gigafactory 1;Munich;DE;25000;91.20;3;LOW;OPERATIONAL
-PLANT-D;Bratislava Assembly Hub;Bratislava;SK;10000;86.50;5;LOW;OPERATIONAL
+ID,name,location,country,productionCapacity,utilizationPct,leadTimeDays,riskScore,status
+PLANT-A,Pune Battery Module Facility,Pune,IN,12000,94.50,6,MED,BOTTLENECKED
+PLANT-B,Wroclaw Pack Assembly Plant,Wroclaw,PL,18000,48.00,4,LOW,OPERATIONAL
+PLANT-C,Munich Gigafactory 1,Munich,DE,25000,91.20,3,LOW,OPERATIONAL
+PLANT-D,Bratislava Assembly Hub,Bratislava,SK,10000,86.50,5,LOW,OPERATIONAL

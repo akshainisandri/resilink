@@ -1,5 +1,5 @@
-ID;name;location;country;material;capacity;baselineCapacity;reliability;riskScore;leadTimeDays;unitCost;status
-SUP-CHE;Chennai Cell Gigafab;Chennai;IN;NMC-811 Cathode Cells;40;100;94.20;HIGH;18;138.50;DISRUPTED
-SUP-TAI;Taoyuan Precision Cathodes;Taoyuan;TW;Lithium Cell Assemblies;90;100;97.80;LOW;8;152.00;BUFFER_AVAILABLE
-SUP-KAT;Katowice Advanced Anodes;Katowice;PL;Graphite Anode Sheets;95;100;98.50;VERY_LOW;5;145.00;OPERATIONAL
-SUP-SAL;Salzgitter Battery Metals;Salzgitter;DE;Precursor Lithium Foil;88;100;96.40;LOW;4;165.00;OPERATIONAL
+ID,name,location,country,material,capacity,baselineCapacity,reliability,riskScore,leadTimeDays,unitCost,status
+SUP-CHE,Chennai Cell Gigafab,Chennai,IN,NMC-811 Cathode Cells,40,100,94.20,HIGH,18,138.50,DISRUPTED
+SUP-TAI,Taoyuan Precision Cathodes,Taoyuan,TW,Lithium Cell Assemblies,90,100,97.80,LOW,8,152.00,BUFFER_AVAILABLE
+SUP-KAT,Katowice Advanced Anodes,Katowice,PL,Graphite Anode Sheets,95,100,98.50,VERY_LOW,5,145.00,OPERATIONAL
+SUP-SAL,Salzgitter Battery Metals,Salzgitter,DE,Precursor Lithium Foil,88,100,96.40,LOW,4,165.00,OPERATIONAL
