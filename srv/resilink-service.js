@@ -6,11 +6,100 @@ const cds = require('@sap/cds');
  */
 class ResilinkService extends cds.ApplicationService {
   async init() {
-    const { Nodes, Disruptions, AuditLogs, ResilienceRuns, Scenarios } = this.entities;
+    const { 
+      Nodes, 
+      Disruptions, 
+      AuditLogs, 
+      ResilienceRuns, 
+      Scenarios,
+      NetworkDesigns,
+      DesignSuppliers,
+      DesignPlants,
+      DesignWarehouses,
+      DesignRoutes,
+      DesignMarkets,
+      DesignScenarios,
+      AIRecommendations 
+    } = this.entities;
+
+    // Handler for Action: saveNetworkDesign (BUILD Module Handoff to SENSE)
+    this.on('saveNetworkDesign', async (req) => {
+      const {
+        productName = 'Electric Vehicle Battery',
+        demandVolume = 10000,
+        targetMarkets = 'India, Europe',
+        budget = 1800000.00,
+        scenarioId = 'SCN-BALANCED',
+        supplierSelection = 'Supplier B (Primary) + Supplier C (Qualified)',
+        productionPlant = 'Plant A (Pune) + Plant C (Chennai)',
+        distributionHub = 'Warehouse X (Rotterdam) + Warehouse Y (Nhava Sheva)',
+        routeCorridor = 'Route 3 (Hybrid Coastal Rail + Fast Sea)',
+        resilienceScore = 92.00
+      } = req.data;
+
+      const baselineId = 'BL-NET-' + Math.floor(10000 + Math.random() * 90000);
+      const nowStr = new Date().toUTCString().slice(17, 25);
+
+      try {
+        if (NetworkDesigns) {
+          await INSERT.into(NetworkDesigns).entries({
+            ID: baselineId,
+            name: `${productName} Global Network Baseline`,
+            product: productName,
+            demandVolume: demandVolume,
+            demandUnit: 'units/month',
+            targetMarkets: targetMarkets,
+            maxCostBudget: budget,
+            requiredDeliveryDays: 14,
+            qualityTier: 'Automotive Grade AEC-Q100',
+            riskTolerance: 'BALANCED',
+            status: 'COMMITTED_BASELINE',
+            selectedScenario: scenarioId,
+            resilienceScore: resilienceScore,
+            totalMonthlyCost: 1640000.00
+          });
+        }
+
+        // Add audit log record of the network design commit
+        await INSERT.into(AuditLogs).entries({
+          ID: 'LOG-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+          time: nowStr,
+          agent: 'Network Synthesis Agent',
+          type: 'Design',
+          color: 'cyan',
+          event: 'AI Supply Network Design Committed as Operational Baseline.',
+          detail: `Baseline ${baselineId} for ${productName} (${demandVolume.toLocaleString()} units/mo) committed to SAP HANA Cloud. Suppliers: ${supplierSelection} | Plants: ${productionPlant} | Hubs: ${distributionHub} | Corridor: ${routeCorridor}. SENSE monitoring activated.`,
+          payload: JSON.stringify({ baselineId, scenarioId, resilienceScore, status: 'COMMITTED_BASELINE' })
+        });
+
+        return {
+          status: 'SUCCESS',
+          baselineId: baselineId,
+          message: `Network Design ${baselineId} successfully committed as SAP HANA Cloud operational baseline. SENSE telemetry tracking initialized.`,
+          handoffStatus: 'ACTIVE_IN_SENSE',
+          timestamp: new Date().toISOString()
+        };
+      } catch (err) {
+        req.error(500, `Failed to commit network design baseline: ${err.message}`);
+      }
+    });
 
     // Handler for Action: executeRecoveryPlan
     this.on('executeRecoveryPlan', async (req) => {
-      const { scenarioId = 'SCN-004', targetPlant = 'PLANT-B', volumeUnits = 1000, carrier = 'Lufthansa Cargo Flight LH-8422 (BOM-DXB)' } = req.data;
+      const {
+        scenarioId = 'SCN-004',
+        recoveryType = 'HYBRID_CAPACITY_REBALANCE',
+        originPlant = 'PLANT-A',
+        targetPlant = 'PLANT-B',
+        volumeUnits = 1000,
+        carrier,
+        expressCarrier,
+        sapTransactionType = 'Z_AUTONOMOUS_RECOVERY',
+        executedBy = 'Pia (VP Global Supply Chain)',
+        timestamp
+      } = req.data;
+
+      const activeCarrier = carrier || expressCarrier || 'Lufthansa Cargo Flight LH-8422 (BOM-DXB)';
       const txId = 'TX-HANA-' + Math.floor(10000 + Math.random() * 90000);
       const nowStr = new Date().toUTCString().slice(17, 25);
 
@@ -59,8 +148,8 @@ class ResilinkService extends cds.ApplicationService {
           type: 'Execution',
           color: 'emerald',
           event: 'Autonomous Recovery Executed via SAP CAP.',
-          detail: `Dispatched POST /odata/v4/resilink/executeRecoveryPlan for ${scenarioId}. Plant B (Pune) line surge authorized in SAP S/4HANA. Express air cargo slots locked on ${carrier}.`,
-          payload: JSON.stringify({ txId, status: '200 OK', volumeUnits, targetPlant })
+          detail: `Dispatched POST /odata/v4/resilink/executeRecoveryPlan for ${scenarioId}. Plant B (Pune) line surge authorized in SAP S/4HANA. Express air cargo slots locked on ${activeCarrier}.`,
+          payload: JSON.stringify({ txId, status: '200 OK', volumeUnits, targetPlant, recoveryType })
         });
 
         // 6. Record Historical Resilience Run (for Vector Store memory)
@@ -68,7 +157,7 @@ class ResilinkService extends cds.ApplicationService {
           scenarioId,
           targetPlant,
           volumeUnits,
-          carrier,
+          carrier: activeCarrier,
           status: 'COMMITTED',
           scoreDelta: '+14.0%',
           transactionId: txId,

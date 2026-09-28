@@ -102,3 +102,156 @@ entity ResilienceRuns : cuid, managed {
   projectedSLA        : Decimal(5, 2);
   vectorEmbeddingRef  : String(100);
 }
+
+/**
+ * ========================================================
+ * BUILD MODULE: INTELLIGENT SUPPLY NETWORK DESIGN ENTITIES
+ * ========================================================
+ */
+
+/**
+ * Master Supply Network Design Specification
+ */
+entity NetworkDesigns : managed {
+  key ID                   : String(32);
+      name                 : String(100);
+      product              : String(100);
+      demandVolume         : Integer;
+      demandUnit           : String(30);
+      targetMarkets        : String(200);
+      maxCostBudget        : Decimal(12, 2);
+      requiredDeliveryDays : Integer;
+      qualityTier          : String(50);
+      riskTolerance        : String(30);
+      status               : String(30); // DRAFT, COMMITTED_BASELINE, ACTIVE
+      selectedScenario     : String(50);
+      resilienceScore      : Decimal(5, 2);
+      totalMonthlyCost     : Decimal(12, 2);
+}
+
+/**
+ * Candidate Suppliers for Evaluation
+ */
+entity DesignSuppliers {
+  key ID              : String(32);
+      name            : String(100);
+      tier            : String(20);
+      location        : String(100);
+      country         : String(10);
+      costTier        : String(20); // Low, Medium, High
+      unitCost        : Decimal(10, 2);
+      riskTier        : String(20); // Low, Medium, High, Very Low
+      riskScore       : Integer;
+      reliability     : Decimal(5, 2);
+      capacity        : Integer;
+      leadTimeDays    : Integer;
+      resilienceScore : Decimal(5, 2);
+      geographyRisk   : String(50);
+      esgRating       : String(10);
+      status          : String(30); // SELECTED, QUALIFIED, BACKUP
+}
+
+/**
+ * Candidate Manufacturing Plants
+ */
+entity DesignPlants {
+  key ID              : String(32);
+      name            : String(100);
+      location        : String(100);
+      country         : String(10);
+      type            : String(50); // Mega Gigafactory, Precision Fab, Assembly
+      unitOpex        : Decimal(10, 2);
+      capacity        : Integer;
+      leadTimeDays    : Integer;
+      riskScore       : Integer;
+      resilienceScore : Decimal(5, 2);
+      flexibility     : String(30);
+      status          : String(30); // PRIMARY, SECONDARY, CONTINGENCY
+}
+
+/**
+ * Candidate Warehouses & Distribution Hubs
+ */
+entity DesignWarehouses {
+  key ID              : String(32);
+      name            : String(100);
+      location        : String(100);
+      country         : String(10);
+      storageType     : String(50);
+      capacityPallets : Integer;
+      unitStorageCost : Decimal(10, 2);
+      leadTimeDays    : Integer;
+      riskScore       : Integer;
+      resilienceScore : Decimal(5, 2);
+      status          : String(30); // ACTIVE_HUB, BUFFER_RESERVE
+}
+
+/**
+ * Transportation Corridors & Routes
+ */
+entity DesignRoutes {
+  key ID              : String(32);
+      name            : String(100);
+      mode            : String(50); // Multimodal Ocean+Rail, Air Freight, Coastal Rail
+      origin          : String(100);
+      destination     : String(100);
+      costIndex       : Decimal(10, 2);
+      transitDays     : Integer;
+      carbonKgPerUnit : Decimal(8, 2);
+      riskScore       : Integer;
+      reliability     : Decimal(5, 2);
+      resilienceScore : Decimal(5, 2);
+      status          : String(30); // PRIMARY_CORRIDOR, EXPRESS_EXPEDITE
+}
+
+/**
+ * Target Markets
+ */
+entity DesignMarkets {
+  key ID               : String(32);
+      name             : String(100);
+      region           : String(50);
+      demandMonthly    : Integer;
+      slaTargetDays    : Integer;
+      priority         : String(20);
+      revenuePotential : String(50);
+}
+
+/**
+ * Network Design Scenarios for Trade-off Comparison
+ */
+entity DesignScenarios {
+  key ID               : String(32);
+      name             : String(100);
+      tagline          : String(100);
+      totalMonthlyCost : Decimal(12, 2);
+      unitLandedCost   : Decimal(10, 2);
+      avgDeliveryDays  : Integer;
+      riskExposure     : Integer;
+      resilienceScore  : Decimal(5, 2);
+      esgRating        : String(10);
+      carbonMetric     : String(50);
+      supplierConfig   : String(100);
+      plantConfig      : String(100);
+      warehouseConfig  : String(100);
+      routeConfig      : String(100);
+      recommended      : Boolean default false;
+}
+
+/**
+ * Generative AI Recommendation
+ */
+entity AIRecommendations : managed {
+  key ID                   : String(32);
+      title                : String(100);
+      recommendedSupplier  : String(100);
+      recommendedPlant     : String(100);
+      recommendedWarehouse : String(100);
+      recommendedRoute     : String(100);
+      resilienceScore      : Decimal(5, 2);
+      totalCost            : String(50);
+      deliverySLA          : String(50);
+      justification        : LargeString;
+      tradeoffAnalysis     : LargeString;
+}
+

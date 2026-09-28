@@ -1,0 +1,4 @@
+ID,name,location,country,type,unitOpex,capacity,leadTimeDays,riskScore,resilienceScore,flexibility,status
+DPLANT-A,Plant A (Pune Gigafactory),Pune,IN,Mega Gigafactory,34.00,8000,5,28,86.00,High,PRIMARY
+DPLANT-B,Plant B (Dresden Precision Fab),Dresden,DE,Precision Clean Fab,48.00,5000,3,14,94.00,Medium,CONTINGENCY
+DPLANT-C,Plant C (Chennai Coastal Assembly),Chennai,IN,Coastal Assembly,36.00,7500,6,24,89.00,High,SECONDARY

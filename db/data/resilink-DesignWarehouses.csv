@@ -1,0 +1,3 @@
+ID,name,location,country,storageType,capacityPallets,unitStorageCost,leadTimeDays,riskScore,resilienceScore,status
+DWH-X,Warehouse X (Rotterdam Euro Hub),Rotterdam,NL,Automated High-Bay,25000,14.00,2,12,96.00,ACTIVE_HUB
+DWH-Y,Warehouse Y (Nhava Sheva Gateway),Navi Mumbai,IN,Bonded Cold Storage & Staging,20000,10.00,3,19,89.00,ACTIVE_HUB

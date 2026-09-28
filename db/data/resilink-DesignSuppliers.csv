@@ -1,0 +1,4 @@
+ID,name,tier,location,country,costTier,unitCost,riskTier,riskScore,reliability,capacity,leadTimeDays,resilienceScore,geographyRisk,esgRating,status
+DSUP-A,Supplier A (Shenzhen Tier-1),Tier 1,Shenzhen,CN,Low,72.00,High,78,74.00,15000,28,52.00,High Port Congestion & Tariff Volatility,B,BACKUP
+DSUP-B,Supplier B (Munich Advanced Materials),Tier 1,Munich,DE,Medium,95.00,Low,22,94.00,12000,14,88.00,Low Geopolitical Risk,AA,SELECTED
+DSUP-C,Supplier C (Kyoto Precision Battery),Tier 1,Kyoto,JP,High,118.00,Very Low,12,98.00,8000,9,95.00,Ultra-low Geopolitical Risk,AAA,QUALIFIED
