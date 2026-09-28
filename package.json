@@ -17,16 +17,14 @@
     "start": "cds-serve",
     "watch": "cds watch",
     "build": "cds build",
-    "deploy": "cds deploy --to sqlite:sqlite.db",
-    "deploy:db": "cds deploy --to sqlite:sqlite.db",
-    "postinstall": "cds deploy --to sqlite:sqlite.db"
+    "deploy": "cds deploy --to sqlite:sqlite.db"
   },
   "cds": {
     "requires": {
       "db": {
         "kind": "sqlite",
         "credentials": {
-          "url": "sqlite.db"
+          "url": ":memory:"
         }
       }
     },

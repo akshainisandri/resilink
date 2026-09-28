@@ -8,7 +8,7 @@
     "db": {
       "kind": "sqlite",
       "credentials": {
-        "url": "sqlite.db"
+        "url": ":memory:"
       }
     }
   },

@@ -3,7 +3,11 @@ package-lock.json
 *.log
 *.shm
 *.wal
+*.db
+*.sqlite
+sqlite.db
 sqlite.db-shm
 sqlite.db-wal
+db.sqlite
 scratch/
 .DS_Store
