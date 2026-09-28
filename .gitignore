@@ -1,0 +1,9 @@
+node_modules/
+package-lock.json
+*.log
+*.shm
+*.wal
+sqlite.db-shm
+sqlite.db-wal
+scratch/
+.DS_Store

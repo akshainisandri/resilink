@@ -16,7 +16,10 @@
   "scripts": {
     "start": "cds-serve",
     "watch": "cds watch",
-    "build": "cds build"
+    "build": "cds build",
+    "deploy": "cds deploy --to sqlite:sqlite.db",
+    "deploy:db": "cds deploy --to sqlite:sqlite.db",
+    "postinstall": "cds deploy --to sqlite:sqlite.db"
   },
   "cds": {
     "requires": {
