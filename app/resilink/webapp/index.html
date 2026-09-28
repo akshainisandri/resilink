@@ -1655,6 +1655,10 @@
       // Live Disruption Simulation Popup Modal
       const [showDisruptionPopup, setShowDisruptionPopup] = useState(false);
       const [kpiDetailModal, setKpiDetailModal] = useState(null); // 'suppliers' | 'plants' | 'warehouses' | 'inventory' | 'orders' | 'shipments' | 'all'
+      const [supplierFilterTab, setSupplierFilterTab] = useState('ALL');
+      const [kpiSearchQuery, setKpiSearchQuery] = useState('');
+      const [kpiPage, setKpiPage] = useState(1);
+      const [kpiViewAll, setKpiViewAll] = useState(false);
       const [viewAllModal, setViewAllModal] = useState(null); // 'suppliers' | 'plants' | 'warehouses' | 'nodes' | null
       const [showAdvancedTrace, setShowAdvancedTrace] = useState(false);
       const [analyticsDateRange, setAnalyticsDateRange] = useState('30D');
