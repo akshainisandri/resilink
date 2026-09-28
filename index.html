@@ -1092,6 +1092,23 @@
       const [latencyMs, setLatencyMs] = useState(14);
       const [currentTime, setCurrentTime] = useState(new Date().toUTCString().slice(17, 25) + ' UTC');
 
+      // BUILD Module State (Intelligent Supply Network Design)
+      const [designInputs, setDesignInputs] = useState({
+        product: 'Electric Vehicle Battery',
+        demandVolume: 10000,
+        targetMarkets: ['India', 'Europe'],
+        maxCost: 180,
+        deliveryDays: 14,
+        qualityReq: 'Automotive Grade AEC-Q100 (Zero Defect)',
+        riskTolerance: 'Balanced'
+      });
+      const [activeDesignScenario, setActiveDesignScenario] = useState('DSCN-03');
+      const [evalFilter, setEvalFilter] = useState('ALL');
+      const [selectedCandidate, setSelectedCandidate] = useState(null);
+      const [isSynthesizing, setIsSynthesizing] = useState(false);
+      const [isCommittingBaseline, setIsCommittingBaseline] = useState(false);
+      const [committedBaseline, setCommittedBaseline] = useState('BL-NET-88421');
+
       // =========================================================
       // DYNAMIC REFLECTION: SYNC BUILD SELECTIONS TO LIVE NETWORK
       // =========================================================
@@ -1249,22 +1266,7 @@
         }
       }, [companyMode, selectedPrimarySupplier, selectedStandbySupplier, selectedPrimaryPlant, selectedSecondaryPlant, plantSplitPct, selectedWarehouses, designInputs.demandVolume]);
 
-      // BUILD Module State (Intelligent Supply Network Design)
-      const [designInputs, setDesignInputs] = useState({
-        product: 'Electric Vehicle Battery',
-        demandVolume: 10000,
-        targetMarkets: ['India', 'Europe'],
-        maxCost: 180,
-        deliveryDays: 14,
-        qualityReq: 'Automotive Grade AEC-Q100 (Zero Defect)',
-        riskTolerance: 'Balanced'
-      });
-      const [activeDesignScenario, setActiveDesignScenario] = useState('DSCN-03');
-      const [evalFilter, setEvalFilter] = useState('ALL');
-      const [selectedCandidate, setSelectedCandidate] = useState(null);
-      const [isSynthesizing, setIsSynthesizing] = useState(false);
-      const [isCommittingBaseline, setIsCommittingBaseline] = useState(false);
-      const [committedBaseline, setCommittedBaseline] = useState('BL-NET-88421');
+
 
 
       // Live UTC clock
