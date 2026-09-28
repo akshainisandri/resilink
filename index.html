@@ -2388,13 +2388,12 @@
                 {[
                   ...(companyMode === 'NEW' ? [{
                     id: 'build',
-                    label: '1. Build (Network Design)',
-                    icon: Icons.Build,
-                    badge: `Step ${buildStep}/6`
+                    label: 'Build Network',
+                    icon: Icons.Build
                   }] : []),
                   { id: 'overview', label: 'Overview (Control Tower)', icon: Icons.Overview },
                   { id: 'network', label: 'Understand (Topology)', icon: Icons.Network },
-                  { id: 'disruptions', label: 'Sense (Disruptions)', icon: Icons.Disruption, badge: isRecovered ? 'Resolved' : '1 Alert', badgeAlert: !isRecovered },
+                  { id: 'disruptions', label: 'Sense (Disruptions)', icon: Icons.Disruption },
                   { id: 'scenarios', label: 'Decide (Scenarios)', icon: Icons.Scenarios },
                   { id: 'analytics', label: 'Learn (Memory & KPI)', icon: Icons.Analytics },
                   { id: 'sap_schema', label: 'Architecture (CAP CDS)', icon: Icons.Code }
@@ -2462,68 +2461,34 @@
           {/* ========================================================= */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             
-            {/* TOP HEADER BAR */}
+            {/* TOP HEADER BAR (MINIMAL ENTERPRISE COMMAND CENTER) */}
             <header className="h-16 border-b theme-border theme-bg-card sticky top-0 z-20 px-6 lg:px-8 flex items-center justify-between gap-4">
               
-              {/* Left: Product branding */}
+              {/* Left side: RESILINK logo & product name */}
               <div className="flex items-center space-x-3">
                 {sidebarCollapsed && (
                   <button 
                     onClick={() => setSidebarCollapsed(false)}
-                    className="p-1.5 rounded-lg theme-bg-elevated theme-text-muted hover:theme-text-main transition"
+                    className="p-1.5 rounded-lg theme-bg-elevated theme-text-muted hover:theme-text-main transition mr-1"
+                    title="Expand sidebar"
                   >
                     <Icons.Menu />
                   </button>
                 )}
-                <div className="flex items-center space-x-2">
-                  <span className="text-base font-bold theme-text-main tracking-tight">RESILINK</span>
-                  <span className="text-xs theme-text-muted hidden sm:inline">•</span>
-                  <span className="text-xs font-semibold text-[#0A6ED1] dark:text-[#58A6FF] hidden sm:inline">AI Supply Chain Command Center</span>
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0A6ED1] to-[#7C4DFF] p-[1.5px] shadow-sm flex-shrink-0">
+                    <div className="w-full h-full theme-bg-card rounded-[6.5px] flex items-center justify-center font-black text-transparent bg-clip-text bg-gradient-to-tr from-[#0A6ED1] to-[#7C4DFF] text-xs">
+                      RL
+                    </div>
+                  </div>
+                  <span className="text-lg font-bold theme-text-main tracking-tight">RESILINK</span>
                 </div>
               </div>
 
-              {/* Center: Active Organisation Context & Current Page */}
-              <div className="hidden md:flex items-center space-x-2 text-sm font-semibold theme-text-main">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-500/10 text-[#0A6ED1] dark:text-blue-400 border border-blue-500/20">
-                  {(companyProfile?.name || "Enterprise")} ({(companyProfile?.code || "COMP")})
-                </span>
-                <span className="theme-text-muted">/</span>
-                <span className="text-base font-bold theme-text-main tracking-tight">
-                  {activeTab === 'overview' ? 'Organisation Control Tower' :
-                   activeTab === 'network' ? 'Network Topology' :
-                   activeTab === 'disruptions' ? 'Disruptions & Multi-Agent Workbench' :
-                   activeTab === 'scenarios' ? 'Scenario Decision Matrix' :
-                   activeTab === 'analytics' ? 'Resilience Memory & SAP Analytics' :
-                   activeTab === 'sap_schema' ? 'CAP CDS Architecture' :
-                   `Intelligent Network Design (Step ${buildStep} of 6)`}
-                </span>
-              </div>
-
-              {/* Right: SAP HANA Cloud, Generative AI Hub, Theme Toggle, User Profile */}
+              {/* Right side: Logged-in company name, user profile & theme toggle */}
               <div className="flex items-center space-x-3">
                 
-                {/* SAP HANA Cloud Status */}
-                <div className="hidden lg:flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-xs text-[#107E3E] dark:text-emerald-400 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-[#107E3E] dark:bg-emerald-400"></span>
-                  <span>SAP HANA Cloud</span>
-                </div>
-
-                {/* Generative AI Hub Status */}
-                <div className="hidden xl:flex items-center space-x-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/25 text-xs text-[#7C4DFF] dark:text-purple-400 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-[#7C4DFF] dark:bg-purple-400"></span>
-                  <span>Generative AI Hub</span>
-                </div>
-
-                {/* Return / Mode Switcher */}
-                <button
-                  onClick={() => setAppStage('SELECTION')}
-                  className="p-2 rounded-xl theme-bg-elevated theme-border border text-xs theme-text-muted hover:theme-text-main hover:border-[#0A6ED1] transition shadow-sm"
-                  title="Switch Company Mode (Existing / New)"
-                >
-                  <Icons.RefreshCw />
-                </button>
-
-                {/* Elegant Compact Theme Toggle (☀️ / 🌙, Icon Only, No Text) */}
+                {/* Theme toggle icon (light / dark) */}
                 <button
                   onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
                   className="p-2 rounded-xl theme-bg-elevated theme-border border text-sm transition-all duration-200 hover:border-[#0A6ED1] shadow-sm flex items-center justify-center cursor-pointer"
@@ -2537,16 +2502,20 @@
                   )}
                 </button>
 
-                {/* User Profile */}
-                <div className="flex items-center space-x-2 pl-2 border-l theme-border">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0A6ED1] to-[#7C4DFF] p-[1.5px]">
+                {/* Logged-in company name & user profile */}
+                <div className="flex items-center space-x-2.5 pl-3 border-l theme-border">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#0A6ED1] to-[#7C4DFF] p-[1.5px] flex-shrink-0">
                     <div className="w-full h-full theme-bg-card rounded-full flex items-center justify-center text-xs font-bold text-[#0A6ED1] dark:text-cyan-300">
                       P
                     </div>
                   </div>
-                  <div className="hidden sm:block text-left">
-                    <div className="text-xs font-semibold theme-text-main leading-tight">Pia</div>
-                    <div className="text-[10px] theme-text-muted leading-tight">Supply Chain VP</div>
+                  <div className="text-left">
+                    <div className="text-xs font-semibold theme-text-main leading-tight">
+                      {companyProfile?.name || 'Apex Mobility Technologies'}
+                    </div>
+                    <div className="text-[11px] theme-text-muted leading-tight">
+                      Pia • Supply Chain VP
+                    </div>
                   </div>
                 </div>
 
@@ -3246,223 +3215,102 @@
               )}
 
               {/* ------------------------------------------------------- */}
-              {/* PAGE 1: OVERVIEW (EXECUTIVE COMMAND CENTER)             */}
+              {/* PAGE 1: OVERVIEW (ORGANISATION CONTROL TOWER DASHBOARD) */}
               {/* ------------------------------------------------------- */}
               {activeTab === 'overview' && (
                 <div className="space-y-6 animate-fadeIn">
                   
-                  {/* ACTIVE ORGANISATION CONTEXT HEADER */}
-                  <div className="p-5 rounded-2xl theme-bg-card border theme-border theme-card-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center space-x-3.5">
-                      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0A6ED1] to-[#7C4DFF] p-[1.5px] shadow-md flex-shrink-0">
-                        <div className="w-full h-full theme-bg-card rounded-[9.5px] flex items-center justify-center font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#0A6ED1] to-[#7C4DFF] text-lg">
-                          {(companyProfile?.code || 'GA').slice(0, 2)}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-base font-bold theme-text-main">
-                            Active Enterprise: {companyProfile?.name || 'Active Enterprise'}
-                          </span>
-                          <span className="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-blue-500/10 text-[#0A6ED1] dark:text-blue-400 border border-blue-500/20">
-                            [{companyProfile?.code || 'COMP'}]
-                          </span>
-                          <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-500/10 text-[#107E3E] dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            SAP BTP Connected
-                          </span>
-                        </div>
-                        <p className="text-xs theme-text-muted mt-0.5">
-                          {companyProfile?.city || 'Global HQ'} • {companyProfile?.industry || 'Supply Chain'} • Multi-Tier Digital Twin Active
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <button
-                        onClick={() => setShowEditNetworkModal(true)}
-                        className="px-4 py-2.5 rounded-xl border theme-border theme-bg-elevated hover:border-[#0A6ED1] text-xs font-semibold theme-text-main flex items-center gap-2 transition cursor-pointer shadow-sm"
-                      >
-                        <Icons.Edit />
-                        <span>✏️ Edit Network</span>
-                      </button>
-                      <button
-                        onClick={() => setShowDisruptionPopup(true)}
-                        className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:brightness-110 text-white text-xs font-bold shadow-md shadow-red-500/25 flex items-center gap-2 transition cursor-pointer"
-                      >
-                        <Icons.Disruption />
-                        <span>⚡ Simulate Disruption Event</span>
-                      </button>
-                    </div>
-                  </div>
-
                   {/* ===================================================== */}
-                  {/* ===================================================== */}
+                  {/* SECTION 1: DISRUPTION ALERT CARD                      */}
                   {/* LIVE SENSE DISRUPTION BANNER (INTELLIGENCE & ACTION)  */}
                   {/* ===================================================== */}
                   {!isRecovered ? (
-                    <div className="p-6 rounded-2xl bg-gradient-to-r from-red-500/10 via-amber-500/10 to-orange-500/10 border-2 border-red-500/40 theme-card-shadow space-y-4 relative overflow-hidden">
-                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-red-600 text-white uppercase tracking-wider flex items-center gap-1.5 animate-pulse">
-                              <span className="w-2 h-2 rounded-full bg-white"></span>
-                              CRITICAL ALERT • SENSE INTELLIGENCE ACTIVE
+                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 theme-card-shadow">
+                      <div className="flex items-center space-x-3.5">
+                        <span className="p-2.5 rounded-lg bg-red-500/20 text-red-600 dark:text-red-400 flex-shrink-0 text-lg">
+                          <Icons.AlertTriangle />
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-red-700 dark:text-red-400">
+                              Supply Chain Disruption Detected: Port Congestion affecting Supplier B
                             </span>
-                            <span className="text-xs font-mono font-bold text-red-600 dark:text-red-400">
-                              SAP S/4HANA PO Rebalance Pending
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/20 text-red-700 dark:text-red-300 font-bold">
+                              ACTIVE
                             </span>
                           </div>
-                          <h3 className="text-xl font-bold theme-text-main flex items-center gap-2">
-                            <span>⚡ Supply Chain Disruption Detected: Chennai Port Congestion & Material Shortfall</span>
-                          </h3>
-                          <p className="text-sm theme-text-muted leading-relaxed max-w-4xl">
-                            Material supply bottleneck detected on maritime feeder corridor to <span className="font-semibold theme-text-main">{nodes[2]?.name || 'Pune Gigafab 1'}</span>. Dwell time has surged by <span className="font-semibold text-red-600">+12 Days</span>, putting <span className="font-semibold theme-text-main">{disruption.affectedUnits?.toLocaleString() || '3,000'} units</span> and <span className="font-semibold text-red-600">$1.42M customer revenue</span> at immediate risk.
+                          <p className="text-xs theme-text-muted mt-0.5">
+                            Impact: Plant A Risk • 3000 Units affected • Chennai Port Congestion dwell time +12 days
                           </p>
                         </div>
-
-                        <div className="flex lg:flex-col items-center lg:items-end justify-between gap-2 border-t lg:border-t-0 pt-3 lg:pt-0 theme-border font-mono text-xs">
-                          <div className="text-right">
-                            <div className="text-[10px] text-muted uppercase">Financial Exposure</div>
-                            <div className="text-lg font-bold text-red-600">$1,420,000</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-[10px] text-muted uppercase">Orders at SLA Risk</div>
-                            <div className="font-bold text-amber-500">12 Customer Deliveries</div>
-                          </div>
-                        </div>
                       </div>
 
-                      {/* AI Multi-Agent Diagnostic Insights */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-                        <div className="p-3 rounded-xl theme-bg-card border theme-border flex items-start space-x-2.5">
-                          <span className="text-base">🚢</span>
-                          <div>
-                            <div className="text-[10px] font-mono font-bold text-blue-600 uppercase">Supplier Intelligence Agent</div>
-                            <div className="text-xs theme-text-muted mt-0.5">Maritime container dwell time surged to 18 days at Chennai Port chokepoint.</div>
-                          </div>
-                        </div>
-                        <div className="p-3 rounded-xl theme-bg-card border theme-border flex items-start space-x-2.5">
-                          <span className="text-base">🏭</span>
-                          <div>
-                            <div className="text-[10px] font-mono font-bold text-purple-600 uppercase">Plant Optimization Agent</div>
-                            <div className="text-xs theme-text-muted mt-0.5">Primary assembly line projected to exhaust cathode buffer stock in 48 hours.</div>
-                          </div>
-                        </div>
-                        <div className="p-3 rounded-xl theme-bg-card border theme-border flex items-start space-x-2.5">
-                          <span className="text-base">⚖️</span>
-                          <div>
-                            <div className="text-[10px] font-mono font-bold text-emerald-600 uppercase">Autonomous Scenario Agent</div>
-                            <div className="text-xs theme-text-muted mt-0.5">Dual-source rebalance (SCN-004) recommended with 96% SLA preservation confidence.</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Direct Action Buttons */}
-                      <div className="flex items-center justify-between flex-wrap gap-3 pt-3 border-t border-red-500/20">
-                        <div className="flex items-center gap-2">
-                          <button
-    onClick={() => setShowDisruptionPopup(true)}
-    className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-red-600/30"
-  >
-    <Icons.Disruption />
-    <span>⚡ View Port Congestion Alert</span>
-  </button>
-  <button
-    onClick={() => setActiveTab('disruptions')}
-    className="px-4 py-2 rounded-xl theme-bg-card border theme-border hover:border-[#0A6ED1] text-xs font-semibold theme-text-main flex items-center gap-1.5 transition cursor-pointer shadow-sm"
-  >
-    <Icons.Network />
-    <span>Analyse Disruption Mesh</span>
-  </button>
-                          <button
-                            onClick={() => setActiveTab('scenarios')}
-                            className="px-4 py-2 rounded-xl theme-bg-card border theme-border hover:border-[#0A6ED1] text-xs font-semibold theme-text-main flex items-center gap-1.5 transition cursor-pointer shadow-sm"
-                          >
-                            <Icons.Scenarios />
-                            <span>Simulate What-If Scenarios</span>
-                          </button>
-                        </div>
-
+                      <div className="flex items-center gap-2.5 flex-shrink-0">
                         <button
                           onClick={() => executeRecoveryPlan('SCN-004')}
-                          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 via-amber-600 to-emerald-600 hover:brightness-110 text-white font-bold text-xs shadow-lg shadow-red-500/25 flex items-center gap-2 cursor-pointer transition"
+                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:brightness-110 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 cursor-pointer transition"
+                          title="Execute Autonomous Recovery via 1-click PO Rebalance"
                         >
-                          <span>⚡ Execute Autonomous Recovery (1-Click S/4HANA PO Rebalance)</span>
-                          <Icons.ArrowRight />
+                          <Icons.Zap />
+                          <span>Execute Autonomous Recovery</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('disruptions')}
+                          className="px-4 py-2 rounded-xl theme-bg-card border border-red-500/40 hover:bg-red-500/10 text-xs font-bold text-red-700 dark:text-red-300 flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                        >
+                          <span>Analyse Disruption</span>
+                          <span>→</span>
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 border-2 border-emerald-500/40 theme-card-shadow space-y-4 relative overflow-hidden">
-                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#107E3E] text-white uppercase tracking-wider flex items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full bg-white"></span>
-                              AUTONOMOUS RECOVERY EXECUTED • SLA SECURED
+                    <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 theme-card-shadow">
+                      <div className="flex items-center space-x-3.5">
+                        <span className="p-2.5 rounded-lg bg-emerald-500/20 text-[#107E3E] dark:text-emerald-400 flex-shrink-0 text-lg">
+                          <Icons.CheckCircle2 />
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-[#107E3E] dark:text-emerald-400">
+                              Autonomous Recovery Executed — Scenario SCN-004 Active
                             </span>
-                            <span className="text-xs font-mono font-bold text-[#107E3E] dark:text-emerald-400">
-                              SAP CAP OData v4 Committed & Synced
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-[#107E3E] dark:text-emerald-300 font-bold">
+                              STABILIZED
                             </span>
                           </div>
-                          <h3 className="text-xl font-bold theme-text-main flex items-center gap-2">
-                            <span>✅ Autonomous Recovery Executed via SAP CAP — Scenario SCN-004 Active</span>
-                          </h3>
-                          <p className="text-sm theme-text-muted leading-relaxed max-w-4xl">
-                            1,000 units autonomously shifted from Primary Plant to Dual-Source Facility with Express Freight. Customer delivery SLAs preserved at <span className="font-semibold text-emerald-600">98.5%</span>. Resilience score surged from 82% to <span className="font-semibold text-emerald-600">96% (+14.0%)</span>.
+                          <p className="text-xs theme-text-muted mt-0.5">
+                            1,000 units shifted to Wroclaw Dual-Source Facility. Customer delivery SLAs preserved at 98.5%.
                           </p>
-                        </div>
-
-                        <div className="flex lg:flex-col items-center lg:items-end justify-between gap-2 border-t lg:border-t-0 pt-3 lg:pt-0 theme-border font-mono text-xs">
-                          <div className="text-right">
-                            <div className="text-[10px] text-muted uppercase">Mitigated Exposure</div>
-                            <div className="text-lg font-bold text-emerald-600">$1,420,000 Protected</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-[10px] text-muted uppercase">Delivery Confidence</div>
-                            <div className="font-bold text-[#0A6ED1]">100% Orders Secured</div>
-                          </div>
                         </div>
                       </div>
 
-                      {/* Direct Action Buttons for Post-Recovery */}
-                      <div className="flex items-center justify-between flex-wrap gap-3 pt-3 border-t border-emerald-500/20">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setActiveTab('network')}
-                            className="px-4 py-2 rounded-xl theme-bg-card border theme-border hover:border-[#107E3E] text-xs font-semibold theme-text-main flex items-center gap-1.5 transition cursor-pointer shadow-sm"
-                          >
-                            <Icons.Network />
-                            <span>View Rebalanced Topology</span>
-                          </button>
-                          <button
-                            onClick={() => setActiveTab('analytics')}
-                            className="px-4 py-2 rounded-xl theme-bg-card border theme-border hover:border-[#107E3E] text-xs font-semibold theme-text-main flex items-center gap-1.5 transition cursor-pointer shadow-sm"
-                          >
-                            <Icons.Analytics />
-                            <span>Inspect Telemetry & Audit Log</span>
-                          </button>
-                        </div>
-
+                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                        <button
+                          onClick={() => setActiveTab('network')}
+                          className="px-3.5 py-2 rounded-xl theme-bg-card border theme-border hover:border-[#107E3E] text-xs font-semibold theme-text-main flex items-center gap-1.5 cursor-pointer transition shadow-sm"
+                        >
+                          <Icons.Network />
+                          <span>Rebalanced Network →</span>
+                        </button>
                         <button
                           onClick={() => {
                             setIsRecovered(false);
                             setToast({
-                              title: 'Simulation Reset',
-                              message: 'Port congestion disruption reactivated for live demonstration.'
+                              title: 'Disruption Reset',
+                              message: 'Port Congestion disruption reactivated for live demonstration.'
                             });
                           }}
-                          className="px-4 py-2 rounded-xl border theme-border theme-bg-elevated hover:theme-text-main text-xs font-mono theme-text-muted flex items-center gap-1.5 cursor-pointer transition"
+                          className="px-3.5 py-2 rounded-xl border theme-border theme-bg-elevated text-xs font-mono theme-text-muted hover:theme-text-main flex items-center gap-1.5 cursor-pointer transition shadow-sm"
                         >
                           <Icons.RefreshCw />
-                          <span>Reset Disruption Simulation</span>
+                          <span>Reset Disruption Demo</span>
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* SECTION 1: EXECUTIVE KPI SUMMARY (6 PREMIUM CARDS)     */}
+                  {/* ===================================================== */}
+                  {/* SECTION 2: EXECUTIVE KPI SUMMARY (6 PREMIUM CARDS)     */}
                   {/* ===================================================== */}
                   <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
                     
@@ -3589,7 +3437,7 @@
                   </div>
 
                   {/* ===================================================== */}
-                  {/* SECTION 2: SUPPLY CHAIN DIGITAL TWIN OVERVIEW          */}
+                  {/* SECTION 3: SUPPLY CHAIN DIGITAL TWIN OVERVIEW          */}
                   {/* Flow: Suppliers ↓ Plants ↓ Warehouses ↓ Customers      */}
                   {/* ===================================================== */}
                   <div className="theme-bg-card border theme-border rounded-2xl p-6 space-y-5 theme-card-shadow">
@@ -3606,16 +3454,21 @@
                           Multi-echelon flow: Suppliers ↓ Plants ↓ Warehouses ↓ Customers. Click any node to inspect live capacity, reliability, and risk.
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 text-xs font-mono">
-                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 theme-text-muted">
-                          <span className="w-2 h-2 rounded-full bg-red-500"></span> Disrupted
-                        </span>
-                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 theme-text-muted">
-                          <span className="w-2 h-2 rounded-full bg-amber-500"></span> Bottlenecked
-                        </span>
-                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 theme-text-muted">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Operational
-                        </span>
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <button
+                          onClick={() => setShowEditNetworkModal(true)}
+                          className="px-3.5 py-1.5 rounded-xl border theme-border theme-bg-elevated hover:border-[#0A6ED1] text-xs font-semibold theme-text-main flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                        >
+                          <Icons.Edit />
+                          <span>✏️ Edit Digital Twin Network</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('network')}
+                          className="px-3.5 py-1.5 rounded-xl bg-[#0A6ED1] hover:bg-[#0854A0] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                        >
+                          <Icons.Network />
+                          <span>Open Full Network Topology →</span>
+                        </button>
                       </div>
                     </div>
 
@@ -3776,14 +3629,14 @@
                   </div>
 
                   {/* ===================================================== */}
-                  {/* SECTION 3: ORGANISATION NETWORK CARDS (5 INTERACTIVE) */}
+                  {/* SECTION 4: ORGANISATION MODULE CARDS (5 INTERACTIVE)   */}
                   {/* ===================================================== */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-semibold theme-text-muted uppercase tracking-wider">
                         Organisation Network Modules
                       </h3>
-                      <span className="text-xs font-mono theme-text-muted">Interactive Management</span>
+                      <span className="text-xs font-mono theme-text-muted">Quick Navigation</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -3802,7 +3655,7 @@
                               Supplier Management
                             </h4>
                             <p className="text-xs theme-text-muted mt-1 leading-relaxed">
-                              Monitor Tier-1 & Tier-2 vendor reliability, lead times, and capacity allocations.
+                              Manage supplier tiering, contracts, reliability scores, and lead times.
                             </p>
                           </div>
                         </div>
@@ -3826,7 +3679,7 @@
                               Plant Operations
                             </h4>
                             <p className="text-xs theme-text-muted mt-1 leading-relaxed">
-                              Real-time assembly utilization, shift capacity, and production line balancing.
+                              Monitor production schedules, capacity utilization, line bottlenecks.
                             </p>
                           </div>
                         </div>
@@ -3850,7 +3703,7 @@
                               Warehouse & Inventory
                             </h4>
                             <p className="text-xs theme-text-muted mt-1 leading-relaxed">
-                              Decoupled buffer reserves, regional distribution hubs, and safety stock.
+                              Track storage buffer capacity, safety stock levels, replenishment.
                             </p>
                           </div>
                         </div>
@@ -3886,7 +3739,7 @@
                               Order Status
                             </h4>
                             <p className="text-xs theme-text-muted mt-1 leading-relaxed">
-                              Track 1,240 customer orders, OEM delivery deadlines, and SLA metrics.
+                              Track inbound/outbound customer orders and fulfillment velocity.
                             </p>
                           </div>
                         </div>
@@ -3922,7 +3775,7 @@
                               Shipment Tracking
                             </h4>
                             <p className="text-xs theme-text-muted mt-1 leading-relaxed">
-                              Live transit corridors, container vessel dwell times, and carrier tracking.
+                              Live freight telemetry, route delays, transit times, and carrier tracking.
                             </p>
                           </div>
                         </div>
@@ -3936,14 +3789,23 @@
                   </div>
 
                   {/* ===================================================== */}
-                  {/* SECTION 4: ANALYTICS (4 CLEAN EXECUTIVE CHARTS)        */}
+                  {/* SECTION 5: ANALYTICS PREVIEW                           */}
                   {/* ===================================================== */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold theme-text-muted uppercase tracking-wider">
-                        Operational Analytics
-                      </h3>
-                      <span className="text-xs font-mono theme-text-muted">Executive Decision Support</span>
+                      <div>
+                        <h3 className="text-sm font-semibold theme-text-muted uppercase tracking-wider">
+                          Operational Analytics
+                        </h3>
+                        <p className="text-xs theme-text-muted mt-0.5">High-level executive summary charts</p>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab('analytics')}
+                        className="px-3.5 py-1.5 rounded-lg theme-bg-card border theme-border hover:border-[#0A6ED1] text-xs font-semibold text-[#0A6ED1] dark:text-[#58A6FF] flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                      >
+                        <span>View Full Analytics</span>
+                        <span>→</span>
+                      </button>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -4114,7 +3976,7 @@
                   </div>
 
                   {/* ===================================================== */}
-                  {/* SECTION 5: AI MONITORING PANEL                         */}
+                  {/* SECTION 6: AI MONITORING CARD                          */}
                   {/* ===================================================== */}
                   <div className="p-6 rounded-2xl theme-bg-card border theme-border theme-card-shadow space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b theme-border pb-4">
@@ -4125,18 +3987,25 @@
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-mono font-bold uppercase text-[#7C4DFF]">AUTONOMOUS CO-PILOT</span>
-                            <span className="text-xs font-mono theme-text-muted">• SAP HANA Cloud Vector Stream</span>
+                            <span className="text-xs font-mono theme-text-muted">• Active Monitoring</span>
                           </div>
                           <h3 className="text-lg font-bold theme-text-main mt-0.5">
                             RESILINK AI Monitoring
                           </h3>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-purple-500/10 text-[#7C4DFF] border border-purple-500/30 flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-[#7C4DFF] animate-pulse"></span>
-                          {isRecovered ? '98.5%' : `${networkResilienceScore}%`} Resilience Score
+                          94% Resilience Score
                         </span>
+                        <button
+                          onClick={() => setActiveTab('disruptions')}
+                          className="px-3.5 py-1.5 rounded-xl bg-[#7C4DFF] hover:bg-[#6839EF] text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                        >
+                          <Icons.Sparkles />
+                          <span>View AI Insights →</span>
+                        </button>
                       </div>
                     </div>
 
@@ -4177,7 +4046,6 @@
                 </div>
               )}
 
-              {/* ------------------------------------------------------- */}
               {/* PAGE 2: NETWORK TOPOLOGY & NODES (FROM SAP HANA CLOUD)   */}
               {/* ------------------------------------------------------- */}
               {activeTab === 'network' && (
