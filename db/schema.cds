@@ -33,7 +33,7 @@ entity Nodes {
 /**
  * Critical Disruption Events detected by Sensing Agents
  */
-entity Disruptions : managed {
+entity Disruptions {
   key ID                   : String(32);
       severity             : String(20); // CRITICAL, WARNING, INFO
       sourceNode           : String(100);
@@ -112,7 +112,7 @@ entity ResilienceRuns : cuid, managed {
 /**
  * Master Supply Network Design Specification
  */
-entity NetworkDesigns : managed {
+entity NetworkDesigns {
   key ID                   : String(32);
       name                 : String(100);
       product              : String(100);
@@ -241,7 +241,7 @@ entity DesignScenarios {
 /**
  * Generative AI Recommendation
  */
-entity AIRecommendations : managed {
+entity AIRecommendations {
   key ID                   : String(32);
       title                : String(100);
       recommendedSupplier  : String(100);
@@ -265,7 +265,7 @@ entity AIRecommendations : managed {
 /**
  * Enterprise Organizations & Supply Chain Owners
  */
-entity Companies : managed {
+entity Companies {
   key ID              : String(32);
       name            : String(100);
       code            : String(50);
@@ -279,7 +279,7 @@ entity Companies : managed {
 /**
  * Global Tier-1 & Tier-2 Suppliers
  */
-entity Suppliers : managed {
+entity Suppliers {
   key ID               : String(32);
       name             : String(100);
       location         : String(100);
@@ -297,7 +297,7 @@ entity Suppliers : managed {
 /**
  * Manufacturing & Assembly Plants
  */
-entity Plants : managed {
+entity Plants {
   key ID                 : String(32);
       name               : String(100);
       location           : String(100);
@@ -312,7 +312,7 @@ entity Plants : managed {
 /**
  * Regional Warehouses & Distribution Hubs
  */
-entity Warehouses : managed {
+entity Warehouses {
   key ID              : String(32);
       name            : String(100);
       location        : String(100);
@@ -327,7 +327,7 @@ entity Warehouses : managed {
 /**
  * Real-time SKU Inventory Levels & Buffer Stock
  */
-entity Inventory : managed {
+entity Inventory {
   key ID                 : String(32);
       material           : String(100);
       plantOrWarehouseId : String(32);
@@ -343,7 +343,7 @@ entity Inventory : managed {
 /**
  * Active Customer & OEM Orders
  */
-entity Orders : managed {
+entity Orders {
   key ID                    : String(32);
       orderNumber           : String(50);
       customerName          : String(100);
@@ -358,7 +358,7 @@ entity Orders : managed {
 /**
  * In-Transit & Scheduled Freight Shipments
  */
-entity Shipments : managed {
+entity Shipments {
   key ID             : String(32);
       shipmentNumber : String(50);
       originNode     : String(100);
@@ -374,7 +374,7 @@ entity Shipments : managed {
 /**
  * Multimodal Transport Routes & Corridors
  */
-entity Routes : managed {
+entity Routes {
   key ID            : String(32);
       name          : String(100);
       origin        : String(100);
@@ -391,7 +391,7 @@ entity Routes : managed {
 /**
  * Target Customer Markets & Regional Demands
  */
-entity CustomerMarkets : managed {
+entity CustomerMarkets {
   key ID                : String(32);
       name              : String(100);
       region            : String(50);
