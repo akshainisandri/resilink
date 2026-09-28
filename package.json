@@ -1,0 +1,34 @@
+{
+  "name": "resilink-cap-service",
+  "version": "1.0.0",
+  "description": "RESILINK AI Supply Chain Command Center — SAP Cloud Application Programming Model (CAP) Service",
+  "repository": "<custom-repository>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "^8.0.0",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "@sap/cds-dk": "^8.0.0",
+    "@cap-js/sqlite": "^1.7.0"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "build": "cds build"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": "sqlite.db"
+        }
+      }
+    },
+    "server": {
+      "index": true
+    }
+  }
+}

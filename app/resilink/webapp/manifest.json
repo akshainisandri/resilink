@@ -1,0 +1,47 @@
+{
+  "_version": "1.48.0",
+  "sap.app": {
+    "id": "resilink.dashboard",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "title": "RESILINK — AI Supply Chain Command Center",
+    "description": "Sense. Reason. Adapt.",
+    "applicationVersion": {
+      "version": "2.4.0"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/resilink/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "HTML5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "dependencies": {
+      "minUI5Version": "1.100.0"
+    },
+    "models": {
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    }
+  }
+}

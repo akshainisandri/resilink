@@ -1,0 +1,2029 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RESILINK — AI Supply Chain Command Center | Sense. Reason. Adapt.</title>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              dark: '#0B0F19',
+              sidebar: '#0D1322',
+              surface: '#111827',
+              elevated: '#1E293B',
+              border: '#334155',
+              hover: '#26354A',
+            },
+            accent: {
+              cyan: '#06B6D4',
+              blue: '#3B82F6',
+              red: '#EF4444',
+              emerald: '#10B981',
+              amber: '#F59E0B',
+              purple: '#8B5CF6',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'dash-flow': 'dash 20s linear infinite',
+            'dash-fast': 'dash 6s linear infinite',
+          },
+          keyframes: {
+            dash: {
+              to: { 'stroke-dashoffset': '-1000' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- React 18 UMD & Babel Standalone -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Glow Effects */
+    .glow-cyan {
+      box-shadow: 0 0 20px -3px rgba(6, 182, 212, 0.25);
+    }
+    .glow-red {
+      box-shadow: 0 0 25px -2px rgba(239, 68, 68, 0.35);
+    }
+    .glow-emerald {
+      box-shadow: 0 0 25px -2px rgba(16, 185, 129, 0.35);
+    }
+    .glow-blue {
+      box-shadow: 0 0 20px -3px rgba(59, 130, 246, 0.25);
+    }
+
+    /* Subtle grid pattern */
+    .bg-grid-pattern {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(51, 65, 85, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(51, 65, 85, 0.15) 1px, transparent 1px);
+    }
+
+    /* SVG Flow animation styles */
+    .path-flow-red {
+      stroke-dasharray: 6 6;
+      animation: dash 12s linear infinite;
+    }
+    .path-flow-cyan {
+      stroke-dasharray: 8 6;
+      animation: dash 16s linear infinite;
+    }
+    .path-flow-emerald {
+      stroke-dasharray: 8 4;
+      animation: dash 8s linear infinite;
+    }
+
+    @keyframes dash {
+      from { stroke-dashoffset: 200; }
+      to { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body class="bg-[#0B0F19] text-slate-100 font-sans antialiased min-h-screen selection:bg-cyan-500 selection:text-white">
+  <div id="root"></div>
+
+  <!-- Main Application Script (Babel Transpiled for zero-build execution) -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // ==========================================
+    // INLINE SVG ICONS (Crisp, High-Performance, Zero-Dependency)
+    // ==========================================
+    const Icons = {
+      Overview: () => (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+      ),
+      Network: () => (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      ),
+      Disruption: () => (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      ),
+      Scenarios: () => (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      ),
+      Analytics: () => (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      ),
+      Code: () => (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+        </svg>
+      ),
+      Shield: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      ),
+      Cpu: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+        </svg>
+      ),
+      Activity: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
+      CheckCircle2: () => (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      TrendingUp: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+      ),
+      Globe: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+        </svg>
+      ),
+      Database: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+        </svg>
+      ),
+      Terminal: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+      ArrowRight: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      ),
+      RefreshCw: () => (
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      ),
+      Zap: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
+      Menu: () => (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      ),
+      ChevronRight: () => (
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      ),
+      Filter: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
+      ),
+      Search: () => (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      ),
+      ExternalLink: () => (
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+      )
+    };
+
+    // ==========================================
+    // INITIAL DATASETS (SAP CAP ENTITIES & FALLBACKS)
+    // ==========================================
+    const INITIAL_NODES = [
+      {
+        id: 'SUP-X',
+        name: 'Supplier X',
+        category: 'Tier-1 Supplier',
+        location: 'Düsseldorf, Germany',
+        country: 'DE',
+        status: 'DISRUPTED',
+        capacity: 40,
+        baselineCapacity: 100,
+        leadTime: '14 Days (Delayed)',
+        material: 'Silicon Micro-Controllers (MC-88)',
+        sapPo: 'PO #88412',
+        sapStorageLoc: 'SLOC_DE_RAW_01',
+        riskScore: '92/100',
+        activeDeficit: '3,000 units',
+        x: 100,
+        y: 110,
+        color: '#EF4444'
+      },
+      {
+        id: 'SUP-Y',
+        name: 'Supplier Y (Backup)',
+        category: 'Tier-1 Supplier',
+        location: 'Katowice, Poland',
+        country: 'PL',
+        status: 'OPERATIONAL',
+        capacity: 100,
+        baselineCapacity: 100,
+        leadTime: '3 Days (Fast-Track)',
+        material: 'Silicon Micro-Controllers (Tier-1 Qualified)',
+        sapPo: 'PO-STANDBY-09',
+        sapStorageLoc: 'SLOC_PL_SEC_02',
+        riskScore: '18/100',
+        activeDeficit: '0 units',
+        x: 100,
+        y: 290,
+        color: '#06B6D4'
+      },
+      {
+        id: 'PLANT-A',
+        name: 'Plant A (Direct Impact)',
+        category: 'Manufacturing Plant',
+        location: 'Stuttgart, Germany',
+        country: 'DE',
+        status: 'BOTTLENECKED',
+        capacity: 42,
+        baselineCapacity: 100,
+        activeOrders: 12,
+        leadTime: '12 Days',
+        material: 'Automotive Sub-Assembly Unit',
+        sapPlantCode: 'PLANT_1010_EU',
+        sapStorageLoc: 'SLOC_STU_PROD_01',
+        riskScore: '85/100',
+        activeDeficit: '3,000 units pending',
+        x: 370,
+        y: 110,
+        color: '#F59E0B'
+      },
+      {
+        id: 'PLANT-B',
+        name: 'Plant B (Resilience Hub)',
+        category: 'Manufacturing Plant',
+        location: 'Pune, India',
+        country: 'IN',
+        status: 'BUFFER_AVAILABLE',
+        capacity: 100,
+        bufferCapacity: '+30% Reserve (+1,200 units)',
+        allocation: 'Nominal (Shift 1 & 2 Active)',
+        leadTime: '2 Days (Express Setup)',
+        material: 'Automotive Sub-Assembly Unit',
+        sapPlantCode: 'PLANT_2020_APAC',
+        sapStorageLoc: 'SLOC_PUN_PROD_02',
+        riskScore: '12/100',
+        activeDeficit: '0 units',
+        x: 370,
+        y: 290,
+        color: '#10B981'
+      },
+      {
+        id: 'WH-UAE',
+        name: 'Central Warehouse Hub',
+        category: 'Consolidation Center',
+        location: 'Dubai Logistics City, UAE',
+        country: 'AE',
+        status: 'OPERATIONAL',
+        capacity: 92,
+        inventoryBuffer: '5,400 units safety stock',
+        slaPurity: '99.4%',
+        leadTime: '1.5 Days',
+        material: 'Cross-Dock Finished Inventory',
+        sapLocation: 'SLOC_DXB_01',
+        riskScore: '14/100',
+        activeDeficit: '0 units',
+        x: 640,
+        y: 200,
+        color: '#3B82F6'
+      },
+      {
+        id: 'DIST-GLOBAL',
+        name: 'Global Customer Delivery',
+        category: 'Market Endpoints',
+        location: 'Frankfurt, Detroit, Tokyo, Singapore',
+        country: 'GLOBAL',
+        status: 'PENDING_REALLOCATION',
+        capacity: 88,
+        pendingCommitments: '12 Tier-1 OEM Customer Orders',
+        sapContractGroup: 'OEM-CONTRACT-AA-900',
+        riskScore: '78/100',
+        activeDeficit: '12 Orders at SLA Penalty Risk',
+        x: 880,
+        y: 200,
+        color: '#8B5CF6'
+      }
+    ];
+
+    const INITIAL_DISRUPTION = {
+      id: 'DISR-2026-0927',
+      severity: 'CRITICAL',
+      sourceNode: 'Supplier X (Germany)',
+      impactNode: 'Plant A (Stuttgart)',
+      shortfallPct: 40,
+      affectedUnits: 3000,
+      customerOrders: 12,
+      headline: 'Supplier X (Germany) delivery shortfall — 40% fulfillment capacity. Impact: Plant A at risk, 3,000 units affected, 12 customer orders pending.',
+      state: 'ACTIVE', // ACTIVE, RESOLVED
+      detectedBy: 'SAP S/4HANA Sensing Agent',
+      timestamp: '22:04:18 UTC',
+      estimatedRevenueLoss: '$1,420,000',
+      rootCause: 'Tier-2 semiconductor substrate shortage at supplier foundry in North Rhine-Westphalia.',
+      urgency: 'HIGH (Action required < 48 hours)'
+    };
+
+    const INITIAL_SCENARIOS = [
+      {
+        id: 'SCN-001',
+        name: 'Wait & Absorb',
+        tag: 'Passive Acceptance',
+        description: 'Accept Supplier X delayed delivery schedule. Pause Plant A production line until replenishment arrives in 14 days.',
+        cost: 'Low ($12,000)',
+        costValue: 12000,
+        time: '14 Days',
+        days: 14,
+        risk: 'High (88%)',
+        riskLevel: 'high',
+        sla: '42%',
+        slaValue: 42,
+        financialImpact: '-$840,000 SLA Penalties',
+        carbonDelta: '0 kg CO2e (Baseline)',
+        recommended: false,
+        lossMitigation: '0%'
+      },
+      {
+        id: 'SCN-002',
+        name: 'Alternate Supplier Y',
+        tag: 'Spot Buy Procurement',
+        description: 'Expedite spot buy purchase order to Supplier Y in Poland with emergency premium tooling and expedited trucking.',
+        cost: 'High ($94,000)',
+        costValue: 94000,
+        time: '3 Days',
+        days: 3,
+        risk: 'Med (45%)',
+        riskLevel: 'med',
+        sla: '91%',
+        slaValue: 91,
+        financialImpact: '-$180,000 Procurement Delta',
+        carbonDelta: '+1,400 kg CO2e (Road Freight)',
+        recommended: false,
+        lossMitigation: '+42%'
+      },
+      {
+        id: 'SCN-003',
+        name: 'Inventory Reallocation',
+        tag: 'Buffer Liquidation',
+        description: 'Deplete Central Warehouse (UAE) safety buffer and reallocate inventory slated for Latin America regional market.',
+        cost: 'Med ($48,000)',
+        costValue: 48000,
+        time: '2 Days',
+        days: 2,
+        risk: 'Low (28%)',
+        riskLevel: 'low',
+        sla: '88%',
+        slaValue: 88,
+        financialImpact: '-$120,000 Redistribution',
+        carbonDelta: '+850 kg CO2e (Air Transfer)',
+        recommended: false,
+        lossMitigation: '+54%'
+      },
+      {
+        id: 'SCN-004',
+        name: 'RESILINK Hybrid Plan',
+        tag: 'Autonomous Rebalance',
+        subtitle: 'Shift 1,000 units Plant A → Plant B + Express Air Freight',
+        description: 'Leverage Plant B (India) reserve capacity (+30%) to assemble 1,000 units, paired with Lufthansa Express Air to UAE hub, and rebalance buffer.',
+        cost: 'Balanced ($52,000)',
+        costValue: 52000,
+        time: '2 Days',
+        days: 2,
+        risk: 'Very Low (8%)',
+        riskLevel: 'very-low',
+        sla: '96%',
+        slaValue: 96,
+        financialImpact: '+$680,000 Loss Mitigation',
+        carbonDelta: '+420 kg CO2e (Optimized Belly Cargo)',
+        recommended: true,
+        badge: 'Recommended Strategy (+68% Loss Mitigation)',
+        lossMitigation: '+68%'
+      }
+    ];
+
+    const INITIAL_AUDIT_LOGS = [
+      {
+        id: 'LOG-001',
+        time: '22:04:18',
+        agent: 'Sensing Agent',
+        type: 'Sensing',
+        color: 'cyan',
+        event: 'Detected shortfall in SAP S/4HANA PO #88412.',
+        detail: 'Supplier X confirmed shipment of only 2,000 units against 5,000 PO quantity (40% fulfillment capacity). Shortfall flagged via S/4HANA EDI message 856.',
+        payload: { po: '88412', vendor: 'SUP-X-DE', material: 'MC-88', deficit: '3,000 units' }
+      },
+      {
+        id: 'LOG-002',
+        time: '22:04:20',
+        agent: 'Network Intelligence Agent',
+        type: 'Network',
+        color: 'blue',
+        event: 'Causal propagation across SAP HANA supply graph completed.',
+        detail: 'Determined downstream blast radius: Plant A assembly line stops in 48 hours. 12 OEM customer orders delayed. Immediate financial exposure: $1.42M.',
+        payload: { blastRadius: 'PLANT-A, DIST-GLOBAL', affectedOrders: 12, exposure: '$1,420,000' }
+      },
+      {
+        id: 'LOG-003',
+        time: '22:04:22',
+        agent: 'Production & Sourcing Agents',
+        type: 'Domain',
+        color: 'purple',
+        event: 'Evaluated alternative node readiness in parallel.',
+        detail: 'Identified Plant B (Pune, India) operating with +30% available capacity on certified lines. Sourcing agent confirmed Supplier Y spot-buy feasibility.',
+        payload: { plantBReserve: '+1,200 units', supplierYLeadTime: '3 days' }
+      },
+      {
+        id: 'LOG-004',
+        time: '22:04:24',
+        agent: 'Scenario Agent',
+        type: 'Scenario',
+        color: 'purple',
+        event: 'Generated 4 what-if configurations with Monte Carlo simulation.',
+        detail: 'Simulated 10,000 iterations for cost, lead time, and customer SLA preservation. Ranked SCN-004 (Hybrid Rebalance) with highest confidence score (96.4%).',
+        payload: { scenariosSimulated: 4, optimalScenario: 'SCN-004', confidenceScore: 0.964 }
+      },
+      {
+        id: 'LOG-005',
+        time: '22:04:26',
+        agent: 'Compliance Safeguard',
+        type: 'Compliance',
+        color: 'amber',
+        event: 'Policy check passed (Cost limit within $50,000 threshold).',
+        detail: 'Plan cost: $52,000 within authorized emergency limit. ESG Scope 3 air emissions offset pre-approved under Lufthansa SAF agreement.',
+        payload: { policyRule: 'CAP_RECOVERY_POL_09', budgetDelta: '$52,000', esgApproved: true }
+      },
+      {
+        id: 'LOG-006',
+        time: '22:04:29',
+        agent: 'Resilience Memory',
+        type: 'Memory',
+        color: 'emerald',
+        event: 'Decision vectors indexed in SAP HANA Cloud HDI Container.',
+        detail: 'Vector embeddings created in SAP HANA Cloud Vector Engine (1536 dims). Pattern matched with 2024 Munich raw material recovery protocol.',
+        payload: { hdiContainer: 'RESILINK_HDI_DB', vectorDims: 1536, patternSimilarity: 0.942 }
+      }
+    ];
+
+    // ==========================================
+    // MAIN APP COMPONENT (MULTI-PAGE PORTAL)
+    // ==========================================
+    function App() {
+      // Navigation State
+      const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'network' | 'disruptions' | 'scenarios' | 'analytics' | 'sap_schema'
+      const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+      // Core Business State
+      const [nodes, setNodes] = useState(INITIAL_NODES);
+      const [disruption, setDisruption] = useState(INITIAL_DISRUPTION);
+      const [scenarios, setScenarios] = useState(INITIAL_SCENARIOS);
+      const [selectedScenario, setSelectedScenario] = useState('SCN-004');
+      const [auditLogs, setAuditLogs] = useState(INITIAL_AUDIT_LOGS);
+      const [selectedNode, setSelectedNode] = useState(null);
+      const [nodeFilter, setNodeFilter] = useState('ALL');
+      const [nodeSearch, setNodeSearch] = useState('');
+      const [agentFilter, setAgentFilter] = useState('ALL');
+      const [isRecovered, setIsRecovered] = useState(false);
+      const [isExecuting, setIsExecuting] = useState(false);
+      const [showApprovalModal, setShowApprovalModal] = useState(false);
+      const [toast, setToast] = useState(null);
+      const [sapMode, setSapMode] = useState('SAP CAP Live OData v4 (Connected)');
+      const [latencyMs, setLatencyMs] = useState(14);
+      const [currentTime, setCurrentTime] = useState(new Date().toUTCString().slice(17, 25) + ' UTC');
+
+      // Live UTC clock
+      useEffect(() => {
+        const timer = setInterval(() => {
+          setCurrentTime(new Date().toUTCString().slice(17, 25) + ' UTC');
+        }, 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      // Auto-dismiss toast
+      useEffect(() => {
+        if (toast) {
+          const t = setTimeout(() => setToast(null), 4500);
+          return () => clearTimeout(t);
+        }
+      }, [toast]);
+
+      // SAP CAP OData Ingestion with Graceful Fallback
+      useEffect(() => {
+        const fetchCapEntities = async () => {
+          try {
+            const [nodesRes, disrRes, scenRes] = await Promise.all([
+              fetch('/odata/v4/resilink/Nodes', { headers: { 'Accept': 'application/json' } }),
+              fetch('/odata/v4/resilink/Disruptions', { headers: { 'Accept': 'application/json' } }),
+              fetch('/odata/v4/resilink/Scenarios', { headers: { 'Accept': 'application/json' } })
+            ]);
+
+            if (nodesRes.ok && disrRes.ok && scenRes.ok) {
+              const nodesData = await nodesRes.json();
+              const disrData = await disrRes.json();
+              const scenData = await scenRes.json();
+              
+              if (nodesData.value) setNodes(nodesData.value);
+              if (disrData.value && disrData.value[0]) setDisruption(disrData.value[0]);
+              if (scenData.value) setScenarios(scenData.value);
+              setSapMode('SAP CAP Live OData v4 (Connected)');
+            } else {
+              setSapMode('SAP CAP Standalone (Fallback Mock Active)');
+            }
+          } catch (err) {
+            setSapMode('SAP CAP Standalone (Fallback Mock Active)');
+          }
+        };
+
+        fetchCapEntities();
+      }, []);
+
+      // Dynamic KPIs calculated from state
+      const kpis = useMemo(() => {
+        if (isRecovered) {
+          return {
+            resilienceScore: { value: '96/100', delta: '+14.0%', positive: true },
+            capacityAtRisk: { value: '0 units', sub: 'Deficit Fully Mitigated', positive: true },
+            recoveryTime: { value: 'In Progress', sub: 'ETA: 48 Hours', positive: true },
+            resolutionRate: { value: '98.5%', sub: 'Autonomous S/4HANA execution', positive: true }
+          };
+        }
+        return {
+          resilienceScore: { value: '82/100', delta: '+4.2%', positive: true },
+          capacityAtRisk: { value: '3,000 units', sub: 'Valued at $1.42M', positive: false },
+          recoveryTime: { value: '2 Days', sub: 'Target: < 4 Days', positive: true },
+          resolutionRate: { value: '94%', sub: 'On-time autonomous baseline', positive: true }
+        };
+      }, [isRecovered]);
+
+      // Execute Recovery Action (POST to SAP CAP)
+      const executeRecoveryPlan = async (scenarioId = 'SCN-004') => {
+        setIsExecuting(true);
+        setShowApprovalModal(false);
+
+        const executionPayload = {
+          scenarioId: scenarioId,
+          recoveryType: 'HYBRID_CAPACITY_REBALANCE',
+          originPlant: 'PLANT-A (Stuttgart)',
+          targetPlant: 'PLANT-B (Pune)',
+          volumeUnits: 1000,
+          expressCarrier: 'Lufthansa Cargo Flight LH-8422 (BOM-DXB)',
+          sapTransactionType: 'Z_AUTONOMOUS_RECOVERY',
+          executedBy: 'Pia (VP Global Supply Chain)',
+          timestamp: new Date().toISOString()
+        };
+
+        try {
+          const response = await fetch('/odata/v4/resilink/executeRecoveryPlan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(executionPayload)
+          });
+          if (response.ok) {
+            const data = await response.json();
+            console.log('SAP CAP Live Response:', data);
+          }
+        } catch (error) {
+          console.warn('Live SAP CAP endpoint unavailable; running simulated fallback.');
+        }
+
+        setTimeout(() => {
+          setIsExecuting(false);
+          setIsRecovered(true);
+
+          // Update nodes state
+          setNodes(prev => prev.map(node => {
+            if (node.id === 'PLANT-B') {
+              return {
+                ...node,
+                capacity: 125,
+                allocation: 'ACTIVE REBALANCE: +1,000 units surging (98% line load)',
+                bufferCapacity: 'Reserve Deployed (Express Air Freight Transit)',
+                status: 'REBALANCED'
+              };
+            }
+            if (node.id === 'PLANT-A') {
+              return {
+                ...node,
+                status: 'STABILIZED',
+                capacity: 75,
+                activeDeficit: '0 units (Mitigated via Plant B transfer)'
+              };
+            }
+            if (node.id === 'DIST-GLOBAL') {
+              return {
+                ...node,
+                status: 'OPERATIONAL',
+                capacity: 98,
+                pendingCommitments: 'All 12 Customer Deliveries on schedule (96% SLA)'
+              };
+            }
+            return node;
+          }));
+
+          // Update disruption banner
+          setDisruption(prev => ({
+            ...prev,
+            state: 'RESOLVED',
+            headline: 'Autonomous Recovery Executed via SAP CAP — 1,000 units shifted Plant A → Plant B (Pune) with Express Air Freight to UAE Hub. All 12 customer orders secured.'
+          }));
+
+          // Append audit logs
+          const nowStr = new Date().toUTCString().slice(17, 25);
+          const newLogs = [
+            {
+              id: 'LOG-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+              time: nowStr,
+              agent: 'Execution Agent',
+              type: 'Execution',
+              color: 'emerald',
+              event: 'Autonomous Recovery Executed via SAP CAP.',
+              detail: 'Dispatched POST /odata/v4/resilink/executeRecoveryPlan for SCN-004. Plant B (Pune) line surge authorized in SAP S/4HANA. Express air cargo slots locked on LH-8422.',
+              payload: { executionPayload, sapStatus: '200 OK', transactionId: 'TX-HANA-99214' }
+            },
+            {
+              id: 'LOG-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+              time: nowStr,
+              agent: 'Resilience Memory',
+              type: 'Memory',
+              color: 'blue',
+              event: 'Decision logged into SAP HANA Cloud HDI Container.',
+              detail: 'Feedback score +14% recorded. SCN-004 vector reinforced as optimal recovery archetype for automotive micro-controller shortages.',
+              payload: { hdiTable: 'RESILINK_HISTORICAL_RUNS', scoreGain: '+14.0%', status: 'COMMITTED' }
+            }
+          ];
+
+          setAuditLogs(prev => [...newLogs, ...prev]);
+
+          setToast({
+            title: 'Recovery Strategy Dispatched to SAP CAP',
+            message: 'Transaction TX-HANA-99214 confirmed in SAP HANA Cloud. Plant B surge active, 12 customer orders protected at 96% SLA.',
+            type: 'success'
+          });
+        }, 850);
+      };
+
+      // Reset Demo State
+      const resetDemo = () => {
+        setNodes(INITIAL_NODES);
+        setDisruption(INITIAL_DISRUPTION);
+        setScenarios(INITIAL_SCENARIOS);
+        setSelectedScenario('SCN-004');
+        setAuditLogs(INITIAL_AUDIT_LOGS);
+        setIsRecovered(false);
+        setSelectedNode(null);
+        setToast({
+          title: 'Demo Environment Reset',
+          message: 'Initial shortfall conditions restored. Ready for interactive demonstration.',
+          type: 'info'
+        });
+      };
+
+      // Filtered nodes
+      const filteredNodes = useMemo(() => {
+        return nodes.filter(n => {
+          const matchesFilter = 
+            nodeFilter === 'ALL' ? true :
+            nodeFilter === 'DISRUPTED' ? n.status === 'DISRUPTED' :
+            nodeFilter === 'BOTTLENECKED' ? n.status === 'BOTTLENECKED' || n.status === 'STRAIN' :
+            nodeFilter === 'OPERATIONAL' ? n.status === 'OPERATIONAL' || n.status === 'READY' || n.status === 'STABILIZED' :
+            nodeFilter === 'BUFFER' ? n.status === 'BUFFER_AVAILABLE' || n.status === 'REBALANCED' : true;
+
+          const matchesSearch = 
+            n.name.toLowerCase().includes(nodeSearch.toLowerCase()) ||
+            n.location.toLowerCase().includes(nodeSearch.toLowerCase()) ||
+            (n.sapPlantCode && n.sapPlantCode.toLowerCase().includes(nodeSearch.toLowerCase())) ||
+            (n.sapPo && n.sapPo.toLowerCase().includes(nodeSearch.toLowerCase()));
+
+          return matchesFilter && matchesSearch;
+        });
+      }, [nodes, nodeFilter, nodeSearch]);
+
+      // Filtered logs
+      const filteredLogs = useMemo(() => {
+        if (agentFilter === 'ALL') return auditLogs;
+        return auditLogs.filter(log => log.type.toLowerCase().includes(agentFilter.toLowerCase()) || log.agent.toLowerCase().includes(agentFilter.toLowerCase()));
+      }, [auditLogs, agentFilter]);
+
+      // Active view title mapping for breadcrumbs
+      const breadcrumbTitle = {
+        overview: 'Overview (Command Center)',
+        network: 'Network Topology & Nodes',
+        disruptions: 'Disruption & Multi-Agent Workbench',
+        scenarios: 'Scenario Planning & Decision Matrix',
+        analytics: 'Analytics & Resilience Memory',
+        sap_schema: 'SAP CAP CDS Architecture & Schema'
+      }[activeTab];
+
+      return (
+        <div className="min-h-screen flex bg-[#0B0F19] text-slate-100 font-sans">
+          
+          {/* ========================================================= */}
+          {/* 1. PERMANENT ENTERPRISE SIDEBAR NAVIGATION               */}
+          {/* ========================================================= */}
+          <aside className={`bg-[#0D1322] border-r border-[#334155] flex flex-col justify-between transition-all duration-300 z-30 ${
+            sidebarCollapsed ? 'w-20' : 'w-64 lg:w-72'
+          }`}>
+            {/* Sidebar Header */}
+            <div>
+              <div className="h-16 flex items-center justify-between px-4 border-b border-[#334155]/80">
+                <div className="flex items-center space-x-3 overflow-hidden">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 p-[1.5px] flex-shrink-0 shadow-lg shadow-cyan-500/20">
+                    <div className="w-full h-full bg-[#0B0F19] rounded-[10px] flex items-center justify-center font-extrabold text-transparent bg-clip-text bg-gradient-to-tr from-cyan-400 to-blue-400 text-lg">
+                      RL
+                    </div>
+                  </div>
+                  {!sidebarCollapsed && (
+                    <div className="overflow-hidden">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-extrabold tracking-wider text-white text-base">RESILINK</span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 bg-cyan-950 text-cyan-400 rounded border border-cyan-800">
+                          v2.4
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 font-medium tracking-wide truncate">Sense. Reason. Adapt.</p>
+                    </div>
+                  )}
+                </div>
+
+                <button 
+                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                  className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition"
+                  title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                  <Icons.Menu />
+                </button>
+              </div>
+
+              {/* Navigation Items Stack */}
+              <div className="p-3 space-y-1.5">
+                {[
+                  { id: 'overview', label: 'Overview', sub: 'Command Center', icon: Icons.Overview },
+                  { id: 'network', label: 'Network Topology', sub: 'HANA Nodes & Flow', icon: Icons.Network, badge: `${nodes.length} Nodes` },
+                  { 
+                    id: 'disruptions', 
+                    label: 'Disruptions & Agents', 
+                    sub: 'Workbench & Pipeline', 
+                    icon: Icons.Disruption, 
+                    badge: isRecovered ? 'Resolved' : '1 Critical',
+                    badgeColor: isRecovered ? 'bg-emerald-950 text-emerald-400 border-emerald-800' : 'bg-red-950 text-red-400 border-red-800' 
+                  },
+                  { id: 'scenarios', label: 'Scenario Matrix', sub: 'What-If Simulations', icon: Icons.Scenarios, badge: '4 Options' },
+                  { id: 'analytics', label: 'Resilience Memory', sub: 'SAC & Vector Logs', icon: Icons.Analytics },
+                  { id: 'sap_schema', label: 'CAP CDS Schema', sub: 'Service Definitions', icon: Icons.Code, badge: 'CDS' }
+                ].map(item => {
+                  const isActive = activeTab === item.id;
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 text-left ${
+                        isActive 
+                          ? 'bg-gradient-to-r from-cyan-950/70 to-[#1E293B] text-white border border-cyan-500/50 shadow-md shadow-cyan-950/30 font-semibold'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-[#1E293B]/60 border border-transparent'
+                      }`}
+                      title={sidebarCollapsed ? item.label : undefined}
+                    >
+                      <div className="flex items-center space-x-3 truncate">
+                        <span className={isActive ? 'text-cyan-400' : 'text-slate-400'}>
+                          <Icon />
+                        </span>
+                        {!sidebarCollapsed && (
+                          <div className="truncate">
+                            <div className="text-xs font-semibold">{item.label}</div>
+                            <div className="text-[10px] text-slate-500">{item.sub}</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {!sidebarCollapsed && item.badge && (
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                          item.badgeColor || 'bg-slate-800 text-slate-300 border-slate-700'
+                        }`}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Sidebar Footer: System Status */}
+            {!sidebarCollapsed ? (
+              <div className="p-4 border-t border-[#334155]/80 space-y-3 bg-[#0B0F19]/60">
+                <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span className="text-emerald-400 font-semibold">7 Multi-Agent Workers Online</span>
+                  </span>
+                  <span className="text-cyan-400">{latencyMs}ms</span>
+                </div>
+                <div className="text-[10px] text-slate-400 leading-tight">
+                  SAP HANA Cloud HDI: <span className="text-slate-300 font-mono">RESILINK_HDI_DB</span>
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 border-t border-[#334155] flex justify-center">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" title="System Online"></span>
+              </div>
+            )}
+          </aside>
+
+          {/* ========================================================= */}
+          {/* MAIN CONTENT WRAPPER (HEADER + ACTIVE PAGE VIEW)          */}
+          {/* ========================================================= */}
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            
+            {/* TOP HEADER BAR */}
+            <header className="h-16 border-b border-[#334155] bg-[#111827]/90 backdrop-blur sticky top-0 z-20 px-4 lg:px-8 flex items-center justify-between gap-4">
+              
+              {/* Breadcrumbs & Dynamic Page Context */}
+              <div className="flex items-center space-x-2 text-xs font-mono">
+                <span className="text-slate-400">RESILINK</span>
+                <Icons.ChevronRight />
+                <span className="text-cyan-400 font-semibold">{breadcrumbTitle}</span>
+              </div>
+
+              {/* Right Controls: SAP Status, Live Time, Reset, Persona */}
+              <div className="flex items-center space-x-3">
+                
+                {/* SAP Integration Badge */}
+                <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#1E293B] border border-[#334155] text-xs">
+                  <span className="flex h-2 w-2 rounded-full bg-cyan-400"></span>
+                  <span className="text-slate-300 font-medium">Connected: <span className="text-cyan-400 font-semibold">SAP HANA Cloud & Generative AI Hub</span></span>
+                  <span className="text-[10px] font-mono text-cyan-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700">
+                    OData v4
+                  </span>
+                </div>
+
+                {/* Clock */}
+                <div className="hidden lg:flex items-center px-2.5 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-400 text-xs font-mono">
+                  {currentTime}
+                </div>
+
+                {/* Reset button */}
+                <button
+                  onClick={resetDemo}
+                  className="flex items-center space-x-1.5 text-xs text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700 transition"
+                  title="Reset demo data to initial disrupted state"
+                >
+                  <Icons.RefreshCw />
+                  <span className="hidden sm:inline">Reset</span>
+                </button>
+
+                {/* Persona Chip */}
+                <div className="flex items-center space-x-2.5 pl-3 border-l border-slate-700/60">
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-cyan-400 p-[1.5px]">
+                      <div className="w-full h-full bg-[#111827] rounded-full flex items-center justify-center text-xs font-bold text-amber-300">
+                        P
+                      </div>
+                    </div>
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#111827] rounded-full"></span>
+                  </div>
+                  <div className="text-left hidden sm:block">
+                    <div className="text-xs font-semibold text-white leading-tight">Pia</div>
+                    <div className="text-[10px] text-slate-400 leading-tight">Global Supply Chain VP</div>
+                  </div>
+                </div>
+
+              </div>
+            </header>
+
+            {/* TOAST NOTIFICATION CONTAINER */}
+            {toast && (
+              <div className="fixed top-20 right-6 z-50 max-w-md w-full animate-bounce">
+                <div className="bg-[#1E293B] border border-emerald-500/50 text-white p-4 rounded-xl shadow-2xl glow-emerald flex items-start space-x-3">
+                  <div className="text-emerald-400 mt-0.5">
+                    <Icons.CheckCircle2 />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400">{toast.title}</h4>
+                    <p className="text-xs text-slate-200 mt-1 leading-relaxed">{toast.message}</p>
+                  </div>
+                  <button onClick={() => setToast(null)} className="text-slate-400 hover:text-white text-xs font-bold">✕</button>
+                </div>
+              </div>
+            )}
+
+            {/* ========================================================= */}
+            {/* VIEW ROUTER (NO RELOAD, PROFESSIONAL PORTAL NAVIGATION)   */}
+            {/* ========================================================= */}
+            <main className="flex-1 overflow-y-auto p-4 lg:p-8 space-y-6">
+
+              {/* ------------------------------------------------------- */}
+              {/* PAGE 1: OVERVIEW (COMMAND CENTER)                       */}
+              {/* ------------------------------------------------------- */}
+              {activeTab === 'overview' && (
+                <div className="space-y-6 animate-fadeIn">
+                  
+                  {/* Executive Alert Banner */}
+                  <div className={`p-5 rounded-2xl border transition-all ${
+                    isRecovered 
+                      ? 'bg-gradient-to-r from-emerald-950/70 via-[#111827] to-emerald-950/40 border-emerald-500/60 glow-emerald' 
+                      : 'bg-gradient-to-r from-red-950/80 via-[#111827] to-amber-950/40 border-red-500/60 glow-red'
+                  }`}>
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex items-start space-x-3.5">
+                        <div className={`p-2.5 rounded-xl border flex-shrink-0 ${
+                          isRecovered ? 'bg-emerald-900/60 border-emerald-500 text-emerald-300' : 'bg-red-900/60 border-red-500 text-red-300 animate-pulse'
+                        }`}>
+                          {isRecovered ? <Icons.CheckCircle2 /> : <Icons.Disruption />}
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded-full border ${
+                              isRecovered ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-red-500/20 text-red-300 border-red-500/40'
+                            }`}>
+                              {isRecovered ? 'AUTONOMOUS RECOVERY ACTIVE' : 'CRITICAL INCIDENT DISR-2026-0927'}
+                            </span>
+                            <span className="text-xs text-slate-400 font-mono">Supplier X Shortfall (40%)</span>
+                          </div>
+                          <p className="text-sm font-semibold text-slate-100">{disruption.headline}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setActiveTab('disruptions')}
+                          className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-600 transition flex items-center gap-1.5"
+                        >
+                          <span>Open Disruption Workbench</span>
+                          <Icons.ArrowRight />
+                        </button>
+                        {!isRecovered && (
+                          <button
+                            onClick={() => setShowApprovalModal(true)}
+                            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white text-xs font-bold shadow-lg shadow-emerald-600/30 transition flex items-center gap-1.5"
+                          >
+                            <Icons.Zap />
+                            <span>Execute Recommended Hybrid Recovery</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Executive KPI Summary Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    <div className="bg-[#111827] border border-[#334155] rounded-xl p-4">
+                      <div className="flex items-center justify-between text-xs text-slate-400">
+                        <span className="flex items-center gap-1.5"><Icons.Activity /> Network Resilience</span>
+                        <span className="font-mono text-emerald-400 font-bold">{kpis.resilienceScore.delta}</span>
+                      </div>
+                      <div className="text-2xl lg:text-3xl font-extrabold font-mono text-white mt-2">
+                        {kpis.resilienceScore.value}
+                      </div>
+                      <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                        <div className={`h-full transition-all duration-700 ${isRecovered ? 'w-[96%] bg-emerald-400' : 'w-[82%] bg-cyan-400'}`}></div>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#111827] border border-[#334155] rounded-xl p-4">
+                      <div className="flex items-center justify-between text-xs text-slate-400">
+                        <span className="flex items-center gap-1.5"><Icons.Disruption /> Capacity at Risk</span>
+                        <span className={`font-mono text-xs font-bold ${isRecovered ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {isRecovered ? 'MITIGATED' : 'DEFICIT'}
+                        </span>
+                      </div>
+                      <div className={`text-2xl lg:text-3xl font-extrabold font-mono mt-2 ${isRecovered ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {kpis.capacityAtRisk.value}
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-1">{kpis.capacityAtRisk.sub}</div>
+                    </div>
+
+                    <div className="bg-[#111827] border border-[#334155] rounded-xl p-4">
+                      <div className="flex items-center justify-between text-xs text-slate-400">
+                        <span className="flex items-center gap-1.5"><Icons.TrendingUp /> Recovery Time</span>
+                        <span className="font-mono text-cyan-400 text-xs font-bold">Target &lt; 4d</span>
+                      </div>
+                      <div className="text-2xl lg:text-3xl font-extrabold font-mono text-white mt-2">
+                        {kpis.recoveryTime.value}
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-1">{kpis.recoveryTime.sub}</div>
+                    </div>
+
+                    <div className="bg-[#111827] border border-[#334155] rounded-xl p-4">
+                      <div className="flex items-center justify-between text-xs text-slate-400">
+                        <span className="flex items-center gap-1.5"><Icons.CheckCircle2 /> SLA Resolution Rate</span>
+                        <span className="font-mono text-emerald-400 text-xs font-bold">99.2%</span>
+                      </div>
+                      <div className="text-2xl lg:text-3xl font-extrabold font-mono text-white mt-2">
+                        {kpis.resolutionRate.value}
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-1">{kpis.resolutionRate.sub}</div>
+                    </div>
+
+                  </div>
+
+                  {/* Quick-Launch Domain Action Cards */}
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3">Enterprise Operations Quick Launch</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      
+                      <div 
+                        onClick={() => setActiveTab('network')}
+                        className="bg-[#111827] border border-[#334155] hover:border-cyan-500/60 p-5 rounded-2xl cursor-pointer transition group"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-cyan-950 text-cyan-400 flex items-center justify-center mb-3 group-hover:scale-105 transition">
+                          <Icons.Network />
+                        </div>
+                        <h4 className="text-sm font-bold text-white mb-1 flex items-center justify-between">
+                          <span>Network Topology & Nodes</span>
+                          <Icons.ChevronRight />
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          Inspect all 6 SAP HANA Cloud entities, live capacity utilization, and lead times across EU, APAC, and UAE.
+                        </p>
+                      </div>
+
+                      <div 
+                        onClick={() => setActiveTab('scenarios')}
+                        className="bg-[#111827] border border-[#334155] hover:border-purple-500/60 p-5 rounded-2xl cursor-pointer transition group"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-purple-950 text-purple-400 flex items-center justify-center mb-3 group-hover:scale-105 transition">
+                          <Icons.Scenarios />
+                        </div>
+                        <h4 className="text-sm font-bold text-white mb-1 flex items-center justify-between">
+                          <span>Scenario Decision Matrix</span>
+                          <Icons.ChevronRight />
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          Review Generative AI what-if trade-offs across 4 simulated strategies, cost thresholds, and SLA impacts.
+                        </p>
+                      </div>
+
+                      <div 
+                        onClick={() => setActiveTab('analytics')}
+                        className="bg-[#111827] border border-[#334155] hover:border-emerald-500/60 p-5 rounded-2xl cursor-pointer transition group"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-emerald-950 text-emerald-400 flex items-center justify-center mb-3 group-hover:scale-105 transition">
+                          <Icons.Analytics />
+                        </div>
+                        <h4 className="text-sm font-bold text-white mb-1 flex items-center justify-between">
+                          <span>Resilience Memory & SAC</span>
+                          <Icons.ChevronRight />
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          Inspect episodic vector memory in SAP HANA Cloud and continuous feedback learning from recovery runs.
+                        </p>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Recent Agent Activity Digest */}
+                  <div className="bg-[#111827] border border-[#334155] rounded-2xl p-5">
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#334155]">
+                      <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <Icons.Terminal /> Recent Multi-Agent Telemetry Stream
+                      </h4>
+                      <button 
+                        onClick={() => setActiveTab('disruptions')}
+                        className="text-xs text-cyan-400 hover:text-cyan-300 font-mono"
+                      >
+                        View Full Trace Drawer →
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {auditLogs.slice(0, 3).map(log => (
+                        <div key={log.id} className="p-3 bg-[#1E293B]/60 rounded-xl border border-slate-700/60 flex items-center justify-between text-xs">
+                          <div className="flex items-center space-x-3">
+                            <span className="font-mono text-slate-400 text-[11px]">[{log.time}]</span>
+                            <span className="font-mono font-bold text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800">
+                              [{log.agent}]
+                            </span>
+                            <span className="text-slate-200">{log.event}</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">SAP S/4HANA PO #88412</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* ------------------------------------------------------- */}
+              {/* PAGE 2: NETWORK TOPOLOGY & NODES (FROM SAP HANA CLOUD)   */}
+              {/* ------------------------------------------------------- */}
+              {activeTab === 'network' && (
+                <div className="space-y-6 animate-fadeIn">
+                  
+                  {/* Top Search & Filter Bar */}
+                  <div className="bg-[#111827] border border-[#334155] rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-slate-400 font-medium mr-1 flex items-center gap-1">
+                        <Icons.Filter /> Status Filter:
+                      </span>
+                      {['ALL', 'DISRUPTED', 'BOTTLENECKED', 'BUFFER', 'OPERATIONAL'].map(f => (
+                        <button
+                          key={f}
+                          onClick={() => setNodeFilter(f)}
+                          className={`px-3 py-1 rounded-lg text-xs font-mono font-semibold transition ${
+                            nodeFilter === f
+                              ? 'bg-cyan-950 text-cyan-400 border border-cyan-700'
+                              : 'bg-slate-900 text-slate-400 border border-slate-800 hover:bg-slate-800'
+                          }`}
+                        >
+                          {f}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="relative w-full md:w-64">
+                      <input
+                        type="text"
+                        value={nodeSearch}
+                        onChange={(e) => setNodeSearch(e.target.value)}
+                        placeholder="Search node, SAP code, PO..."
+                        className="w-full bg-[#1E293B] border border-[#334155] rounded-xl px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Interactive SVG Flow Map Canvas */}
+                  <div className="bg-[#111827] border border-[#334155] rounded-2xl p-5 space-y-3">
+                    <div className="flex items-center justify-between border-b border-[#334155] pb-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                          <Icons.Globe /> Topological Mesh & Material Flow Telemetry
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Click any node to open the live SAP HANA ERP parameter inspector
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs font-mono">
+                        <span className="text-red-400 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400"></span> Shortfall</span>
+                        <span className="text-emerald-400 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400"></span> Rebalance Path</span>
+                      </div>
+                    </div>
+
+                    <div className="w-full h-[360px] bg-[#0B0F19] rounded-xl border border-slate-800 relative bg-grid-pattern flex items-center justify-center overflow-hidden">
+                      <svg viewBox="0 0 1000 420" className="w-full h-full select-none">
+                        
+                        {/* Flow lines */}
+                        <path d="M 210 110 L 370 110" fill="none" stroke="#EF4444" strokeWidth={isRecovered ? "2" : "3.5"} className={isRecovered ? "" : "path-flow-red"} strokeDasharray="6 6" />
+                        <path d="M 210 290 L 370 290" fill="none" stroke="#06B6D4" strokeWidth="2" strokeDasharray="5 5" opacity="0.4" />
+                        <path d="M 520 110 Q 600 130 640 180" fill="none" stroke="#3B82F6" strokeWidth="2" strokeDasharray="6 6" className="path-flow-cyan" />
+                        <path d="M 520 290 Q 580 260 640 220" fill="none" stroke={isRecovered ? "#10B981" : "#334155"} strokeWidth={isRecovered ? "4" : "2"} className={isRecovered ? "path-flow-emerald" : ""} strokeDasharray="8 4" />
+                        <path d="M 780 200 L 870 200" fill="none" stroke={isRecovered ? "#10B981" : "#8B5CF6"} strokeWidth="3" className={isRecovered ? "path-flow-emerald" : "path-flow-cyan"} />
+
+                        {isRecovered && (
+                          <g>
+                            <path d="M 445 290 Q 600 370 760 250" fill="none" stroke="#06B6D4" strokeWidth="3" strokeDasharray="10 5" className="path-flow-emerald" />
+                            <rect x="530" y="325" width="160" height="24" rx="12" fill="#0B0F19" stroke="#06B6D4" strokeWidth="1.5" />
+                            <text x="610" y="341" fill="#06B6D4" fontSize="10" fontFamily="JetBrains Mono" fontWeight="bold" textAnchor="middle">✈ LH-8422 EXPRESS AIR</text>
+                          </g>
+                        )}
+
+                        {/* Node Elements */}
+                        {nodes.map(n => {
+                          const isSelected = selectedNode && selectedNode.id === n.id;
+                          return (
+                            <g 
+                              key={n.id} 
+                              className="cursor-pointer transition-transform hover:scale-105"
+                              onClick={() => setSelectedNode(n)}
+                            >
+                              {n.status === 'DISRUPTED' && !isRecovered && (
+                                <circle cx={n.x + 55} cy={n.y} r="50" fill="none" stroke="#EF4444" strokeWidth="1.5" opacity="0.4" className="animate-ping" />
+                              )}
+                              {n.id === 'PLANT-B' && isRecovered && (
+                                <circle cx={n.x + 75} cy={n.y} r="55" fill="none" stroke="#10B981" strokeWidth="1.5" opacity="0.4" className="animate-ping" />
+                              )}
+                              <rect 
+                                x={n.x} y={n.y - 40} width={n.type === 'Market Endpoints' ? 120 : 130} height={80} rx="12" 
+                                fill="#111827" 
+                                stroke={isSelected ? "#06B6D4" : n.color} 
+                                strokeWidth={isSelected ? "2.5" : "1.5"} 
+                              />
+                              <circle cx={n.x + 20} cy={n.y - 20} r="4.5" fill={n.color} />
+                              <text x={n.x + 32} y={n.y - 16} fill="#FFFFFF" fontSize="11" fontWeight="bold">{n.name.split(' (')[0]}</text>
+                              <text x={n.x + 18} y={n.y + 4} fill="#94A3B8" fontSize="9.5">{n.location.split(',')[0]}</text>
+                              <text x={n.x + 18} y={n.y + 24} fill={n.color} fontSize="10" fontFamily="JetBrains Mono" fontWeight="bold">
+                                {n.status === 'DISRUPTED' ? 'Cap: 40% (-60%)' : n.id === 'PLANT-B' && isRecovered ? '+1,000 Surging' : `Cap: ${n.capacity}%`}
+                              </text>
+                            </g>
+                          );
+                        })}
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* SAP HANA Nodes Table */}
+                  <div className="bg-[#111827] border border-[#334155] rounded-2xl overflow-hidden">
+                    <div className="p-4 border-b border-[#334155] flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <Icons.Database /> SAP HANA Cloud Master Data Entities
+                      </h4>
+                      <span className="text-xs font-mono text-slate-400">
+                        {filteredNodes.length} of {nodes.length} Nodes Rendered
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-[#1E293B]/70 text-slate-400 font-mono uppercase text-[10px] border-b border-[#334155]">
+                          <tr>
+                            <th className="p-3.5">Entity ID</th>
+                            <th className="p-3.5">Facility / Name</th>
+                            <th className="p-3.5">Category</th>
+                            <th className="p-3.5">Location</th>
+                            <th className="p-3.5">SAP Identifier</th>
+                            <th className="p-3.5">Capacity</th>
+                            <th className="p-3.5">Lead Time</th>
+                            <th className="p-3.5">Status</th>
+                            <th className="p-3.5 text-right">Inspect</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#334155]/60 text-slate-200">
+                          {filteredNodes.map(node => (
+                            <tr 
+                              key={node.id} 
+                              onClick={() => setSelectedNode(node)}
+                              className="hover:bg-[#1E293B]/50 transition cursor-pointer"
+                            >
+                              <td className="p-3.5 font-mono font-bold text-cyan-400">{node.id}</td>
+                              <td className="p-3.5 font-semibold text-white">{node.name}</td>
+                              <td className="p-3.5 text-slate-400">{node.category}</td>
+                              <td className="p-3.5">{node.location}</td>
+                              <td className="p-3.5 font-mono text-amber-300">
+                                {node.sapPlantCode || node.sapPo || node.sapLocation || node.sapContractGroup}
+                              </td>
+                              <td className="p-3.5 font-mono">
+                                <span className={node.capacity < 50 ? 'text-red-400 font-bold' : 'text-emerald-400'}>
+                                  {node.capacity}%
+                                </span>
+                              </td>
+                              <td className="p-3.5 font-mono text-slate-300">{node.leadTime}</td>
+                              <td className="p-3.5">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border ${
+                                  node.status === 'DISRUPTED' ? 'bg-red-950 text-red-400 border-red-800' :
+                                  node.status === 'BOTTLENECKED' ? 'bg-amber-950 text-amber-400 border-amber-800' :
+                                  node.status === 'REBALANCED' || node.status === 'BUFFER_AVAILABLE' ? 'bg-cyan-950 text-cyan-400 border-cyan-800' :
+                                  'bg-emerald-950 text-emerald-400 border-emerald-800'
+                                }`}>
+                                  {node.status}
+                                </span>
+                              </td>
+                              <td className="p-3.5 text-right">
+                                <button className="text-cyan-400 hover:text-cyan-300 font-mono text-[11px] underline">
+                                  Drawer →
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Node Detail Drawer / Inspection Modal */}
+                  {selectedNode && (
+                    <div className="p-5 bg-[#1E293B] border border-cyan-500/60 rounded-2xl animate-fadeIn space-y-4 shadow-xl">
+                      <div className="flex items-center justify-between border-b border-slate-700 pb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-2 rounded-xl bg-cyan-950 text-cyan-400 border border-cyan-800">
+                            <Icons.Network />
+                          </div>
+                          <div>
+                            <h3 className="text-base font-bold text-white flex items-center gap-2">
+                              {selectedNode.name}
+                              <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-900 text-cyan-400 border border-slate-800">
+                                {selectedNode.id}
+                              </span>
+                            </h3>
+                            <p className="text-xs text-slate-400">{selectedNode.location} • {selectedNode.category}</p>
+                          </div>
+                        </div>
+
+                        <button 
+                          onClick={() => setSelectedNode(null)}
+                          className="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 font-mono"
+                        >
+                          ✕ Close Drawer
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs font-mono">
+                        <div className="p-3 bg-[#111827] rounded-xl border border-slate-800">
+                          <span className="text-slate-500 block text-[10px]">ERP STORAGE LOCATION</span>
+                          <span className="text-amber-300 font-semibold">{selectedNode.sapStorageLoc || 'CENTRAL-LOC'}</span>
+                        </div>
+                        <div className="p-3 bg-[#111827] rounded-xl border border-slate-800">
+                          <span className="text-slate-500 block text-[10px]">MATERIAL / PART NO</span>
+                          <span className="text-slate-200 font-semibold">{selectedNode.material}</span>
+                        </div>
+                        <div className="p-3 bg-[#111827] rounded-xl border border-slate-800">
+                          <span className="text-slate-500 block text-[10px]">RISK SCORE EVALUATION</span>
+                          <span className="text-cyan-400 font-semibold">{selectedNode.riskScore}</span>
+                        </div>
+                        <div className="p-3 bg-[#111827] rounded-xl border border-slate-800">
+                          <span className="text-slate-500 block text-[10px]">ACTIVE DEFICIT / SURGE</span>
+                          <span className="text-emerald-400 font-semibold">{selectedNode.activeDeficit || selectedNode.bufferCapacity}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              )}
+
+              {/* ------------------------------------------------------- */}
+              {/* PAGE 3: DISRUPTION & MULTI-AGENT WORKBENCH              */}
+              {/* ------------------------------------------------------- */}
+              {activeTab === 'disruptions' && (
+                <div className="space-y-6 animate-fadeIn">
+                  
+                  {/* Incident Deep Inspection Card */}
+                  <div className="bg-[#111827] border border-red-500/40 rounded-2xl p-5 space-y-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#334155] pb-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-red-950 text-red-400 border border-red-800">
+                            INCIDENT {disruption.id}
+                          </span>
+                          <span className="text-xs text-slate-400 font-mono">Detected via SAP S/4HANA PO #88412</span>
+                        </div>
+                        <h2 className="text-lg font-bold text-white mt-1">{disruption.headline}</h2>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-mono text-amber-400 bg-amber-950/80 border border-amber-800 px-3 py-1.5 rounded-xl">
+                          Revenue Exposure: {disruption.estimatedRevenueLoss}
+                        </span>
+                        {!isRecovered ? (
+                          <button
+                            onClick={() => setShowApprovalModal(true)}
+                            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow transition flex items-center gap-1.5"
+                          >
+                            <Icons.Zap />
+                            <span>Execute Hybrid Plan</span>
+                          </button>
+                        ) : (
+                          <span className="text-xs font-mono text-emerald-400 bg-emerald-950 border border-emerald-700 px-3 py-1.5 rounded-xl">
+                            Mitigated via Plant B
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
+                      <div className="p-3 bg-[#1E293B]/70 rounded-xl border border-slate-700">
+                        <span className="text-slate-400 block text-[10px]">ROOT CAUSE</span>
+                        <span className="text-slate-200">{disruption.rootCause}</span>
+                      </div>
+                      <div className="p-3 bg-[#1E293B]/70 rounded-xl border border-slate-700">
+                        <span className="text-slate-400 block text-[10px]">SUPPLIER X SHORTFALL</span>
+                        <span className="text-red-400 font-bold">40% Delivered (3,000 units missing)</span>
+                      </div>
+                      <div className="p-3 bg-[#1E293B]/70 rounded-xl border border-slate-700">
+                        <span className="text-slate-400 block text-[10px]">CUSTOMER IMPACT</span>
+                        <span className="text-cyan-400 font-bold">12 Enterprise OEM Orders Pending</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Interactive Multi-Agent Pipeline Tracker */}
+                  <div className="bg-[#111827] border border-[#334155] rounded-2xl p-5 space-y-4">
+                    <div className="flex items-center justify-between border-b border-[#334155] pb-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                          <Icons.Cpu /> Autonomous Multi-Agent Reasoning Pipeline
+                        </h3>
+                        <p className="text-xs text-slate-400">
+                          Active execution trace across Sensing, Reasoning, Domain Agents, and Compliance
+                        </p>
+                      </div>
+                      <span className="text-xs font-mono px-2.5 py-1 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded-lg">
+                        Pipeline Status: All 5 Stages Verified
+                      </span>
+                    </div>
+
+                    {/* Stepped Visual Agent Cards Flow */}
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                      
+                      {/* Step 1: Sensing */}
+                      <div className="p-3.5 bg-[#1E293B] border border-cyan-500/50 rounded-xl relative">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-cyan-400 mb-2">
+                          <span>STAGE 1</span>
+                          <span>22:04:18</span>
+                        </div>
+                        <h4 className="text-xs font-bold text-white">Sensing Agent</h4>
+                        <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                          Ingested SAP S/4HANA EDI 856 PO #88412 shortfall flag.
+                        </p>
+                        <span className="inline-block mt-3 px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-800">
+                          100% Ingested
+                        </span>
+                      </div>
+
+                      {/* Step 2: Network Intelligence */}
+                      <div className="p-3.5 bg-[#1E293B] border border-blue-500/50 rounded-xl relative">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-blue-400 mb-2">
+                          <span>STAGE 2</span>
+                          <span>22:04:20</span>
+                        </div>
+                        <h4 className="text-xs font-bold text-white">Network Agent</h4>
+                        <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                          Traversed SAP HANA graph; localized Plant A risk & OEM commitments.
+                        </p>
+                        <span className="inline-block mt-3 px-2 py-0.5 rounded text-[10px] font-mono bg-blue-950 text-blue-300 border border-blue-800">
+                          Blast Radius Solved
+                        </span>
+                      </div>
+
+                      {/* Step 3: Domain Agents */}
+                      <div className="p-3.5 bg-[#1E293B] border border-purple-500/50 rounded-xl relative">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-purple-400 mb-2">
+                          <span>STAGE 3</span>
+                          <span>22:04:22</span>
+                        </div>
+                        <h4 className="text-xs font-bold text-white">Domain Agents</h4>
+                        <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                          Production + Logistics: identified Plant B +30% reserve buffer.
+                        </p>
+                        <span className="inline-block mt-3 px-2 py-0.5 rounded text-[10px] font-mono bg-purple-950 text-purple-300 border border-purple-800">
+                          Parallel Eval
+                        </span>
+                      </div>
+
+                      {/* Step 4: Scenario Agent */}
+                      <div className="p-3.5 bg-[#1E293B] border border-purple-500/50 rounded-xl relative">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-purple-400 mb-2">
+                          <span>STAGE 4</span>
+                          <span>22:04:24</span>
+                        </div>
+                        <h4 className="text-xs font-bold text-white">Scenario Agent</h4>
+                        <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                          Ran 10k Monte Carlo runs. Ranked SCN-004 Hybrid optimal.
+                        </p>
+                        <span className="inline-block mt-3 px-2 py-0.5 rounded text-[10px] font-mono bg-purple-950 text-purple-300 border border-purple-800">
+                          96.4% Score
+                        </span>
+                      </div>
+
+                      {/* Step 5: Compliance Safeguard */}
+                      <div className="p-3.5 bg-[#1E293B] border border-emerald-500/50 rounded-xl relative">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-emerald-400 mb-2">
+                          <span>STAGE 5</span>
+                          <span>22:04:26</span>
+                        </div>
+                        <h4 className="text-xs font-bold text-white">Compliance Safeguard</h4>
+                        <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                          Validated $50,000 policy threshold and ESG Scope 3 air offset.
+                        </p>
+                        <span className="inline-block mt-3 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800">
+                          Pre-Approved
+                        </span>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Audit Event Stream with Filtering */}
+                  <div className="bg-[#111827] border border-[#334155] rounded-2xl p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#334155] pb-3">
+                      <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <Icons.Terminal /> Full Reasoning Log Inspector
+                      </h4>
+
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono">
+                        {['ALL', 'Sensing', 'Network', 'Domain', 'Scenario', 'Compliance', 'Execution', 'Memory'].map(f => (
+                          <button
+                            key={f}
+                            onClick={() => setAgentFilter(f)}
+                            className={`px-2.5 py-1 rounded-lg border transition ${
+                              agentFilter === f
+                                ? 'bg-cyan-950 text-cyan-300 border-cyan-700 font-bold'
+                                : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
+                      {filteredLogs.map(log => (
+                        <div key={log.id} className="p-3.5 bg-[#1E293B]/70 rounded-xl border border-slate-700 flex flex-col md:flex-row md:items-start justify-between gap-3 text-xs">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-slate-400 text-[11px]">[{log.time}]</span>
+                              <span className="font-mono font-bold text-[10px] px-2 py-0.5 rounded-full bg-slate-900 text-cyan-300 border border-slate-800">
+                                [{log.agent}]
+                              </span>
+                              <span className="font-bold text-white">{log.event}</span>
+                            </div>
+                            <p className="text-slate-300 leading-relaxed text-[11.5px]">{log.detail}</p>
+                          </div>
+                          <div className="font-mono text-[10px] text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-800 flex-shrink-0">
+                            {log.payload ? Object.keys(log.payload)[0] + ': ' + Object.values(log.payload)[0] : 'VERIFIED'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* ------------------------------------------------------- */}
+              {/* PAGE 4: SCENARIO PLANNING & DECISION MATRIX             */}
+              {/* ------------------------------------------------------- */}
+              {activeTab === 'scenarios' && (
+                <div className="space-y-6 animate-fadeIn">
+                  
+                  {/* Scenario Matrix Header */}
+                  <div className="bg-[#111827] border border-[#334155] rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Icons.Scenarios /> Side-by-Side Generative AI Scenario Trade-Off Matrix
+                      </h2>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Synthesized by RESILINK Scenario Agent via SAP Generative AI Hub & Monte Carlo supply risk modeling
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setShowApprovalModal(true)}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 flex items-center gap-1.5 self-start sm:self-center"
+                    >
+                      <Icons.Shield />
+                      <span>Review & Authorize Strategy</span>
+                    </button>
+                  </div>
+
+                  {/* 4-Column Side-by-Side Cards Comparison */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                    {scenarios.map(sc => {
+                      const isSelected = selectedScenario === sc.id;
+                      return (
+                        <div
+                          key={sc.id}
+                          onClick={() => setSelectedScenario(sc.id)}
+                          className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between relative ${
+                            sc.recommended
+                              ? 'bg-gradient-to-b from-emerald-950/60 via-[#1E293B] to-[#111827] border-emerald-500/70 shadow-xl shadow-emerald-950/40 glow-emerald'
+                              : isSelected
+                                ? 'bg-[#1E293B] border-cyan-500'
+                                : 'bg-[#111827] border-[#334155] hover:border-slate-500'
+                          }`}
+                        >
+                          {/* Recommended Ribbon */}
+                          {sc.badge && (
+                            <div className="absolute -top-3 right-4 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 text-[10px] font-mono font-extrabold px-3 py-0.5 rounded-full shadow">
+                              ★ RECOMMENDED
+                            </div>
+                          )}
+
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+                                {sc.id} • {sc.tag}
+                              </span>
+                              <span className={`text-xs font-mono font-bold ${
+                                sc.slaValue >= 90 ? 'text-emerald-400' : sc.slaValue >= 80 ? 'text-amber-400' : 'text-red-400'
+                              }`}>
+                                SLA: {sc.sla}
+                              </span>
+                            </div>
+
+                            <h3 className="text-base font-bold text-white mb-2">{sc.name}</h3>
+                            <p className="text-xs text-slate-300 leading-relaxed mb-4">{sc.description}</p>
+                          </div>
+
+                          {/* Matrix Parameter Blocks */}
+                          <div className="space-y-2.5 pt-3 border-t border-slate-700/60 text-xs font-mono">
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">Recovery Cost:</span>
+                              <span className="font-bold text-slate-200">{sc.cost}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">Resolution Time:</span>
+                              <span className="font-bold text-slate-200">{sc.time}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">Operational Risk:</span>
+                              <span className={`font-bold ${
+                                sc.riskLevel === 'very-low' ? 'text-emerald-400' : sc.riskLevel === 'low' ? 'text-cyan-400' : sc.riskLevel === 'med' ? 'text-amber-400' : 'text-red-400'
+                              }`}>{sc.risk}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">Loss Mitigation:</span>
+                              <span className="font-bold text-emerald-400">{sc.lossMitigation}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-400">Carbon Delta:</span>
+                              <span className="text-slate-300 text-[11px]">{sc.carbonDelta}</span>
+                            </div>
+
+                            <div className="pt-3">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedScenario(sc.id);
+                                  setShowApprovalModal(true);
+                                }}
+                                className={`w-full py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                                  sc.recommended
+                                    ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md'
+                                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                                }`}
+                              >
+                                <Icons.Zap />
+                                <span>{sc.recommended ? 'Authorize & Deploy' : 'Select Plan'}</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Comparative Matrix Table */}
+                  <div className="bg-[#111827] border border-[#334155] rounded-2xl overflow-hidden">
+                    <div className="p-4 border-b border-[#334155]">
+                      <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                        Consolidated Trade-Off Scorecard
+                      </h4>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-[#1E293B]/70 text-slate-400 font-mono text-[10px] uppercase border-b border-[#334155]">
+                          <tr>
+                            <th className="p-3.5">Scenario Configuration</th>
+                            <th className="p-3.5">Estimated Cost</th>
+                            <th className="p-3.5">Resolution SLA</th>
+                            <th className="p-3.5">Lead Time</th>
+                            <th className="p-3.5">Financial Delta</th>
+                            <th className="p-3.5">Risk Rating</th>
+                            <th className="p-3.5">Compliance Gate</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#334155]/60 text-slate-200 font-mono">
+                          {scenarios.map(sc => (
+                            <tr key={sc.id} className={sc.recommended ? 'bg-emerald-950/20 font-semibold' : ''}>
+                              <td className="p-3.5">
+                                <span className="text-white font-bold">{sc.name}</span>
+                                {sc.recommended && <span className="ml-2 text-[10px] text-emerald-400">★ OPTIMAL</span>}
+                              </td>
+                              <td className="p-3.5">{sc.cost}</td>
+                              <td className="p-3.5">
+                                <span className={sc.slaValue >= 90 ? 'text-emerald-400 font-bold' : sc.slaValue >= 80 ? 'text-amber-400' : 'text-red-400'}>
+                                  {sc.sla}
+                                </span>
+                              </td>
+                              <td className="p-3.5">{sc.time}</td>
+                              <td className="p-3.5 text-slate-300">{sc.financialImpact}</td>
+                              <td className="p-3.5">{sc.risk}</td>
+                              <td className="p-3.5">
+                                <span className="text-emerald-400">✓ PASS</span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* ------------------------------------------------------- */}
+              {/* PAGE 5: ANALYTICS & RESILIENCE MEMORY                   */}
+              {/* ------------------------------------------------------- */}
+              {activeTab === 'analytics' && (
+                <div className="space-y-6 animate-fadeIn">
+                  
+                  {/* Top Stats Banner */}
+                  <div className="bg-[#111827] border border-[#334155] rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Icons.Analytics /> SAP HANA Cloud Vector Store & Resilience Memory
+                      </h2>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Episodic feedback engine: each executed recovery reinforces organizational supply chain reflexes
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-xs font-mono">
+                      <span className="px-3 py-1.5 rounded-xl bg-cyan-950 border border-cyan-800 text-cyan-300">
+                        SAP Analytics Cloud (SAC): Synchronized (Live)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Impact Review Metrics */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <div className="bg-[#111827] border border-[#334155] rounded-2xl p-5">
+                      <div className="text-xs text-slate-400 font-mono mb-1">SCORE ACCELERATION</div>
+                      <div className="text-3xl font-extrabold font-mono text-emerald-400">
+                        {isRecovered ? '96/100' : '82/100'}
+                      </div>
+                      <p className="text-xs text-slate-300 mt-2">
+                        {isRecovered ? '+14.0% gain from Plant B hybrid reallocation' : 'Baseline network resilience readiness'}
+                      </p>
+                    </div>
+
+                    <div className="bg-[#111827] border border-[#334155] rounded-2xl p-5">
+                      <div className="text-xs text-slate-400 font-mono mb-1">RECOVERY ROI MULTIPLIER</div>
+                      <div className="text-3xl font-extrabold font-mono text-cyan-400">27.3x</div>
+                      <p className="text-xs text-slate-300 mt-2">
+                        $52,000 hybrid air freight investment preserved $1.42M customer revenue commitments
+                      </p>
+                    </div>
+
+                    <div className="bg-[#111827] border border-[#334155] rounded-2xl p-5">
+                      <div className="text-xs text-slate-400 font-mono mb-1">VECTOR SEARCH CONFIDENCE</div>
+                      <div className="text-3xl font-extrabold font-mono text-purple-400">94.2%</div>
+                      <p className="text-xs text-slate-300 mt-2">
+                        Historical archetype matched with Munich 2024 micro-controller disruption pattern
+                      </p>
+                    </div>
+
+                  </div>
+
+                  {/* Resilience Vector Logs Table */}
+                  <div className="bg-[#111827] border border-[#334155] rounded-2xl p-5 space-y-4">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                      <Icons.Database /> Historical Recovery Archetypes (SAP HANA Cloud Vector Store)
+                    </h3>
+
+                    <div className="space-y-3">
+                      {[
+                        { date: '2026-09-27', event: 'Supplier X shortfall (40% capacity, Plant A deficit)', archetype: 'Hybrid Shift (Plant B + Express Air Freight)', score: '+14% Resilience', similarity: '0.942', status: isRecovered ? 'EXECUTED & REINFORCED' : 'PENDING AUTHORIZATION' },
+                        { date: '2025-11-14', event: 'Rotterdam Port strike (3-week container hold)', archetype: 'Rail Corridor Reroute (Duisburg Hub)', score: '+11% Resilience', similarity: '0.884', status: 'HISTORICAL BENCHMARK' },
+                        { date: '2025-04-02', event: 'Automotive PCB fab chemical contamination', archetype: 'Dual Sourcing Spot Activation (Katowice)', score: '+9% Resilience', similarity: '0.812', status: 'HISTORICAL BENCHMARK' }
+                      ].map((item, idx) => (
+                        <div key={idx} className="p-4 bg-[#1E293B]/70 rounded-xl border border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-cyan-400 font-bold">{item.date}</span>
+                              <span className="font-bold text-white">{item.event}</span>
+                            </div>
+                            <p className="text-slate-300">Archetype: <span className="text-slate-100 font-semibold">{item.archetype}</span></p>
+                          </div>
+                          <div className="flex items-center gap-3 font-mono text-[11px]">
+                            <span className="text-emerald-400 font-bold">{item.score}</span>
+                            <span className="text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Cosine: {item.similarity}</span>
+                            <span className={`px-2 py-0.5 rounded font-bold ${
+                              item.status.includes('EXECUTED') ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-slate-800 text-slate-300'
+                            }`}>{item.status}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* ------------------------------------------------------- */}
+              {/* PAGE 6: SAP CAP CDS ARCHITECTURE & SCHEMA               */}
+              {/* ------------------------------------------------------- */}
+              {activeTab === 'sap_schema' && (
+                <div className="bg-[#111827] border border-[#334155] rounded-2xl p-6 space-y-6 animate-fadeIn">
+                  <div className="border-b border-[#334155] pb-4">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                      <Icons.Code /> SAP Cloud Application Programming Model (CAP) Integration Specification
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Direct single-file drop-in for SAP Business Application Studio (BAS). Zero build step required.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <div className="text-xs font-mono text-cyan-400">srv/resilink-service.cds</div>
+                      <pre className="p-4 bg-[#0B0F19] border border-[#334155] rounded-xl text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed">
+{`using { resilink as db } from '../db/schema';
+
+service ResilinkService @(path: '/odata/v4/resilink') {
+  @readonly entity Nodes as projection on db.Nodes;
+  @readonly entity Disruptions as projection on db.Disruptions;
+  @readonly entity Scenarios as projection on db.Scenarios;
+  @readonly entity AuditLogs as projection on db.AuditLogs;
+
+  // Custom Recovery Action wired to UI Button
+  action executeRecoveryPlan(
+    scenarioId: String,
+    targetPlant: String,
+    volumeUnits: Integer,
+    carrier: String
+  ) returns {
+    status: String;
+    transactionId: String;
+    reallocatedCapacity: Integer;
+    projectedSLA: Decimal(5,2);
+  };
+}`}
+                      </pre>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="text-xs font-mono text-emerald-400">db/schema.cds</div>
+                      <pre className="p-4 bg-[#0B0F19] border border-[#334155] rounded-xl text-xs font-mono text-slate-300 overflow-x-auto leading-relaxed">
+{`namespace resilink;
+
+entity Nodes {
+  key ID          : String(32);
+      name        : String(100);
+      type        : String(30);
+      location    : String(100);
+      status      : String(20);
+      capacity    : Integer;
+      baseline    : Integer;
+      sapPlantCode: String(30);
+}
+
+entity Disruptions {
+  key ID          : String(32);
+      severity    : String(20);
+      sourceNode  : String(100);
+      shortfallPct: Integer;
+      affectedUnits: Integer;
+      customerOrders: Integer;
+      headline    : LargeString;
+      status      : String(20);
+}
+
+entity Scenarios {
+  key ID          : String(32);
+      name        : String(100);
+      cost        : String(50);
+      time        : String(30);
+      risk        : String(30);
+      sla         : String(20);
+      recommended : Boolean;
+}`}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </main>
+
+            {/* ========================================================= */}
+            {/* HUMAN-IN-THE-LOOP APPROVAL MODAL                         */}
+            {/* ========================================================= */}
+            {showApprovalModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+                <div className="bg-[#111827] border border-cyan-500/70 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl glow-cyan">
+                  <div className="flex items-center justify-between border-b border-[#334155] pb-3">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="p-2 rounded-xl bg-cyan-950 text-cyan-400 border border-cyan-800">
+                        <Icons.Shield />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-white">Human-in-the-Loop Authorization Gate</h3>
+                        <p className="text-xs text-slate-400">SAP S/4HANA PO Reallocation & Autonomous Execution</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setShowApprovalModal(false)}
+                      className="text-slate-400 hover:text-white text-xs font-mono"
+                    >
+                      ✕ Cancel
+                    </button>
+                  </div>
+
+                  <div className="p-4 bg-[#1E293B]/80 rounded-xl border border-slate-700 space-y-2 text-xs font-mono">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Scenario Code:</span>
+                      <span className="text-white font-bold">SCN-004 (RESILINK Hybrid Plan)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Target Production Plant:</span>
+                      <span className="text-cyan-400 font-bold">Plant B (Pune, India) — 1,000 Units</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Expedited Logistics:</span>
+                      <span className="text-slate-200">Lufthansa Cargo Flight LH-8422 (BOM-DXB)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Financial Authorization:</span>
+                      <span className="text-emerald-400 font-bold">$52,000 (Within $100k Limit)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Projected Customer SLA:</span>
+                      <span className="text-emerald-400 font-bold">96% Preserved ($1.42M Revenue Protected)</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-emerald-950/60 border border-emerald-800 rounded-xl text-xs text-emerald-300 flex items-center gap-2">
+                    <Icons.CheckCircle2 />
+                    <span>Compliance Verification: SOX 404 & ESG Scope 3 air offset passed.</span>
+                  </div>
+
+                  <div className="flex items-center justify-end space-x-3 pt-2">
+                    <button
+                      onClick={() => setShowApprovalModal(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 border border-slate-700"
+                    >
+                      Dismiss
+                    </button>
+                    <button
+                      onClick={() => executeRecoveryPlan('SCN-004')}
+                      disabled={isExecuting}
+                      className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 flex items-center gap-1.5"
+                    >
+                      {isExecuting ? (
+                        <span>Committing to SAP HANA...</span>
+                      ) : (
+                        <>
+                          <Icons.Zap />
+                          <span>Authorize & Commit via SAP CAP</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* FOOTER */}
+            <footer className="border-t border-[#334155] bg-[#0B0F19] text-slate-500 text-xs py-3 px-4 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <div className="flex items-center space-x-2">
+                <span className="font-extrabold text-slate-300">RESILINK</span>
+                <span>•</span>
+                <span>Sense. Reason. Adapt.</span>
+                <span>•</span>
+                <span className="text-cyan-400">SAP BTP & CAP Native</span>
+              </div>
+              <div className="font-mono text-[11px] text-slate-400">
+                User: vp.pia@resilink.corp • Session: ACTIVE (TLS 1.3)
+              </div>
+            </footer>
+
+          </div>
+
+        </div>
+      );
+    }
+
+    // Mount React Root
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

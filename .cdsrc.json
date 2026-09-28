@@ -1,0 +1,18 @@
+{
+  "folders": {
+    "db": "db",
+    "srv": "srv",
+    "app": "app"
+  },
+  "requires": {
+    "db": {
+      "kind": "sqlite",
+      "credentials": {
+        "url": "sqlite.db"
+      }
+    }
+  },
+  "server": {
+    "index": true
+  }
+}
