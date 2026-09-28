@@ -1343,7 +1343,7 @@
           {
             id: plantB?.id || 'PLANT-02',
             name: plantB?.name || 'Dual-Source Facility',
-            category: 'Dual-Source Facility',
+            category: 'Reserve Assembly Plant',
             location: plantB?.location || 'Chennai, India',
             country: plantB?.country || 'IN',
             status: isRecovered ? 'REBALANCED' : 'BUFFER_AVAILABLE',
@@ -1363,7 +1363,7 @@
           {
             id: whX?.id || 'WH-01',
             name: whX?.name || 'Regional Distribution Hub',
-            category: 'Regional Distribution Hub',
+            category: 'Regional Warehouse Distribution Hub',
             location: whX?.location || 'Rotterdam, Netherlands',
             country: whX?.country || 'NL',
             status: 'OPERATIONAL',
@@ -1459,9 +1459,38 @@
               const disrData = await disrRes.json();
               const scenData = await scenRes.json();
               
-              if (nodesData.value) setNodes(nodesData.value);
-              if (disrData.value && disrData.value[0]) setDisruption(disrData.value[0]);
-              if (scenData.value) setScenarios(scenData.value);
+              if (nodesData && Array.isArray(nodesData.value) && nodesData.value.length > 0) {
+                const normalized = nodesData.value.map(n => ({
+                  ...n,
+                  id: n.id || n.ID || 'NODE',
+                  ID: n.ID || n.id || 'NODE',
+                  name: n.name || 'Unnamed Facility',
+                  category: n.category || 'Manufacturing Facility',
+                  location: n.location || 'Global Hub',
+                  status: n.status || 'OPERATIONAL',
+                  capacity: typeof n.capacity === 'number' ? n.capacity : 100,
+                  riskScore: n.riskScore || '15/100',
+                  color: n.color || '#0A6ED1'
+                }));
+                setNodes(normalized);
+              }
+              if (disrData && Array.isArray(disrData.value) && disrData.value[0]) {
+                const d = disrData.value[0];
+                setDisruption({
+                  ...d,
+                  id: d.id || d.ID || 'DISR-2026-0927',
+                  affectedUnits: typeof d.affectedUnits === 'number' ? d.affectedUnits : 3000
+                });
+              }
+              if (scenData && Array.isArray(scenData.value) && scenData.value.length > 0) {
+                const normalizedScens = scenData.value.map(s => ({
+                  ...s,
+                  id: s.id || s.ID || 'SCN',
+                  name: s.name || 'Strategy',
+                  recommended: s.recommended === true || s.recommended === 'true'
+                }));
+                setScenarios(normalizedScens);
+              }
               setSapMode('SAP CAP Live OData v4 (Connected)');
             } else {
               setSapMode('SAP CAP Standalone (Fallback Mock Active)');
@@ -2428,7 +2457,7 @@
               {/* Center: Active Organisation Context & Current Page */}
               <div className="hidden md:flex items-center space-x-2 text-sm font-semibold theme-text-main">
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-500/10 text-[#0A6ED1] dark:text-blue-400 border border-blue-500/20">
-                  {companyProfile.name} ({companyProfile.code})
+                  {(companyProfile?.name || "Enterprise")} ({(companyProfile?.code || "COMP")})
                 </span>
                 <span className="theme-text-muted">/</span>
                 <span className="text-base font-bold theme-text-main tracking-tight">
@@ -3537,22 +3566,22 @@
                           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-[#0A6ED1]">Tier-1/2</span>
                         </div>
                         <div className="space-y-3">
-                          {nodes.filter(n => n.category.includes('Supplier') || n.id.startsWith('SUP') || n.id.startsWith('DSUP')).map(node => (
+                          {(nodes || []).filter(n => (n.category || '').includes('Supplier') || (n.id || n.ID || '').startsWith('SUP') || (n.id || n.ID || '').startsWith('DSUP')).map(node => (
                             <div
                               key={node.id}
                               onClick={() => setInspectedEntity(node)}
                               className={`p-3.5 rounded-xl border transition-all cursor-pointer group hover:shadow-md ${
-                                node.status === 'DISRUPTED' && !isRecovered
+                                (node?.status || '').includes('DISRUPTED') && !isRecovered
                                   ? 'border-red-500/50 bg-red-500/5 hover:border-red-500'
                                   : 'theme-bg-card theme-border hover:border-[#0A6ED1]'
                               }`}
                             >
                               <div className="flex items-center justify-between mb-1">
                                 <span className="font-bold text-xs theme-text-main group-hover:text-[#0A6ED1] transition">
-                                  {node.name.split(' (')[0]}
+                                  {(node?.name || 'Node').split(' (')[0]}
                                 </span>
                                 <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                                  node.status === 'DISRUPTED' && !isRecovered ? 'bg-red-500/20 text-red-600 dark:text-red-300' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
+                                  (node?.status || '').includes('DISRUPTED') && !isRecovered ? 'bg-red-500/20 text-red-600 dark:text-red-300' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
                                 }`}>
                                   {isRecovered ? 'OPERATIONAL' : node.status}
                                 </span>
@@ -3576,22 +3605,22 @@
                           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-[#7C4DFF]">Assembly</span>
                         </div>
                         <div className="space-y-3">
-                          {nodes.filter(n => n.category.includes('Plant') || n.id.startsWith('PLANT') || n.id.startsWith('DPLANT')).map(node => (
+                          {(nodes || []).filter(n => (n.category || '').includes('Plant') || (n.id || n.ID || '').startsWith('PLANT') || (n.id || n.ID || '').startsWith('DPLANT')).map(node => (
                             <div
                               key={node.id}
                               onClick={() => setInspectedEntity(node)}
                               className={`p-3.5 rounded-xl border transition-all cursor-pointer group hover:shadow-md ${
-                                node.status === 'BOTTLENECKED' && !isRecovered
+                                (node?.status || '').includes('BOTTLENECKED') && !isRecovered
                                   ? 'border-amber-500/50 bg-amber-500/5 hover:border-amber-500'
                                   : 'theme-bg-card theme-border hover:border-[#7C4DFF]'
                               }`}
                             >
                               <div className="flex items-center justify-between mb-1">
                                 <span className="font-bold text-xs theme-text-main group-hover:text-[#7C4DFF] transition">
-                                  {node.name.split(' (')[0]}
+                                  {(node?.name || 'Node').split(' (')[0]}
                                 </span>
                                 <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                                  node.status === 'BOTTLENECKED' && !isRecovered ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
+                                  (node?.status || '').includes('BOTTLENECKED') && !isRecovered ? 'bg-amber-500/20 text-amber-600 dark:text-amber-300' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
                                 }`}>
                                   {isRecovered ? 'STABILIZED' : node.status}
                                 </span>
@@ -3615,7 +3644,7 @@
                           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-[#107E3E]">Buffers</span>
                         </div>
                         <div className="space-y-3">
-                          {nodes.filter(n => n.category.includes('Warehouse') || n.category.includes('Consolidation') || n.id.startsWith('WH') || n.id.startsWith('DWH')).map(node => (
+                          {(nodes || []).filter(n => (n.category || '').includes('Warehouse') || (n.category || '').includes('Consolidation') || (n.category || '').includes('Hub') || (n.id || n.ID || '').startsWith('WH') || (n.id || n.ID || '').startsWith('DWH')).map(node => (
                             <div
                               key={node.id}
                               onClick={() => setInspectedEntity(node)}
@@ -3623,7 +3652,7 @@
                             >
                               <div className="flex items-center justify-between mb-1">
                                 <span className="font-bold text-xs theme-text-main group-hover:text-[#107E3E] transition">
-                                  {node.name.split(' (')[0]}
+                                  {(node?.name || 'Node').split(' (')[0]}
                                 </span>
                                 <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-300">
                                   {node.status}
@@ -3648,22 +3677,22 @@
                           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-[#0A6ED1]">OEM Hubs</span>
                         </div>
                         <div className="space-y-3">
-                          {nodes.filter(n => n.category.includes('Market') || n.category.includes('Customer') || n.id.startsWith('DIST')).map(node => (
+                          {(nodes || []).filter(n => (n.category || '').includes('Market') || (n.category || '').includes('Customer') || (n.category || '').includes('Endpoints') || (n.id || n.ID || '').startsWith('DIST')).map(node => (
                             <div
                               key={node.id}
                               onClick={() => setInspectedEntity(node)}
                               className={`p-3.5 rounded-xl border transition-all cursor-pointer group hover:shadow-md ${
-                                node.status.includes('PENDING') && !isRecovered
+                                (node?.status || '').includes('PENDING') && !isRecovered
                                   ? 'border-purple-500/50 bg-purple-500/5 hover:border-purple-500'
                                   : 'theme-bg-card theme-border hover:border-[#0A6ED1]'
                               }`}
                             >
                               <div className="flex items-center justify-between mb-1">
                                 <span className="font-bold text-xs theme-text-main group-hover:text-[#0A6ED1] transition">
-                                  {node.name.split(' (')[0]}
+                                  {(node?.name || 'Node').split(' (')[0]}
                                 </span>
                                 <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                                  node.status.includes('PENDING') && !isRecovered ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
+                                  (node?.status || '').includes('PENDING') && !isRecovered ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
                                 }`}>
                                   {isRecovered ? 'FULFILLED' : node.status}
                                 </span>
@@ -4182,16 +4211,16 @@
                           // Multi-Echelon Placement Coordinates
                           let nodeX = n.x;
                           let nodeY = n.y;
-                          if (n.category.includes('Supplier') || n.id.startsWith('SUP') || n.id.startsWith('DSUP')) {
+                          if ((n.category || '').includes('Supplier') || (n.id || n.ID || '').startsWith('SUP') || (n.id || n.ID || '').startsWith('DSUP')) {
                             nodeX = 40;
                             nodeY = (n.id === 'SUP-CHE' || n.id === 'DSUP-A' || n.id === 'DSUP-B') ? 120 : 300;
-                          } else if (n.category.includes('Plant') || n.id.startsWith('PLANT') || n.id.startsWith('DPLANT')) {
+                          } else if ((n.category || '').includes('Plant') || (n.id || n.ID || '').startsWith('PLANT') || (n.id || n.ID || '').startsWith('DPLANT')) {
                             nodeX = 330;
                             nodeY = (n.id === 'PLANT-A' || n.id === 'DPLANT-A') ? 120 : 300;
-                          } else if (n.category.includes('Warehouse') || n.category.includes('Consolidation') || n.id.startsWith('WH') || n.id.startsWith('DWH')) {
+                          } else if ((n.category || '').includes('Warehouse') || (n.category || '').includes('Consolidation') || (n.category || '').includes('Hub') || (n.id || n.ID || '').startsWith('WH') || (n.id || n.ID || '').startsWith('DWH')) {
                             nodeX = 620;
                             nodeY = 210;
-                          } else if (n.category.includes('Endpoints') || n.category.includes('Market') || n.category.includes('Customer') || n.id.startsWith('DIST')) {
+                          } else if ((n.category || '').includes('Endpoints') || (n.category || '').includes('Market') || (n.category || '').includes('Customer') || (n.id || n.ID || '').startsWith('DIST')) {
                             nodeX = 910;
                             nodeY = 210;
                           }
@@ -4267,7 +4296,7 @@
                                 x={centerX} y={nodeY + 31} 
                                 fill="var(--text-muted)" fontSize="9.5" fontFamily="JetBrains Mono" textAnchor="middle"
                               >
-                                {n.location.split(',')[0]} • {n.status === 'DISRUPTED' && !isRecovered ? 'Cap: 40%' : `Cap: ${isRecovered && n.id === 'PLANT-B' ? '88% Surging' : n.capacity + '%'}`}
+                                {(n.location || 'Global').split(',')[0]} • {n.status === 'DISRUPTED' && !isRecovered ? 'Cap: 40%' : `Cap: ${isRecovered && n.id === 'PLANT-B' ? '88% Surging' : n.capacity + '%'}`}
                               </text>
                             </g>
                           );
@@ -4324,11 +4353,11 @@
                               <td className="p-3.5 font-mono theme-text-muted">{node.leadTime}</td>
                               <td className="p-3.5">
                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border ${
-                                  node.status === 'DISRUPTED' && !isRecovered ? 'bg-red-500/10 text-red-600 border-red-500/30' :
-                                  node.status === 'BOTTLENECKED' && !isRecovered ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' :
+                                  (node?.status || '').includes('DISRUPTED') && !isRecovered ? 'bg-red-500/10 text-red-600 border-red-500/30' :
+                                  (node?.status || '').includes('BOTTLENECKED') && !isRecovered ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' :
                                   'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
                                 }`}>
-                                  {isRecovered && node.status === 'DISRUPTED' ? 'OPERATIONAL' : node.status}
+                                  {isRecovered && (node?.status || '').includes('DISRUPTED') ? 'OPERATIONAL' : node.status}
                                 </span>
                               </td>
                               <td className="p-3.5 text-right">
@@ -5618,7 +5647,7 @@ entity Scenarios {
 
     // Mount React Root
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    root.render(<ResilinkErrorBoundary><App /></ResilinkErrorBoundary>);
   </script>
 </body>
 </html>
