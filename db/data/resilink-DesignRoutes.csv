@@ -1,4 +1,0 @@
-ID,name,mode,origin,destination,costIndex,transitDays,carbonKgPerUnit,riskScore,reliability,resilienceScore,status
-DROUTE-1,Route 1 (Multimodal Ocean + Rail),Ocean + Rail,Shenzhen / Nhava Sheva,Rotterdam,18.00,21,48.00,54,84.00,76.00,CONTINGENCY
-DROUTE-2,Route 2 (Air Freight Express Corridor),Air Cargo Express,BOM / FRA,Rotterdam & Munich,46.00,4,210.00,18,97.00,93.00,EXPRESS_EXPEDITE
-DROUTE-3,Route 3 (Hybrid Coastal Rail + Fast Sea),Hybrid Fast Sea + Rail,Chennai / Nhava Sheva,Rotterdam & Dresden,28.00,12,78.00,26,91.00,89.00,PRIMARY_CORRIDOR

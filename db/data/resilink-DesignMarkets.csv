@@ -1,4 +1,0 @@
-ID,name,region,demandMonthly,slaTargetDays,priority,revenuePotential
-DMKT-EU,Europe (Berlin & Munich EV Cluster),EMEA,6000,14,P1 - Strategic,$4.8M / month
-DMKT-IN,India (Pune & Bengaluru Auto Hub),APAC,4000,10,P1 - High Growth,$2.4M / month
-DMKT-US,North America (Detroit & Austin),Americas,0,21,P2 - Expansion,$3.2M / month

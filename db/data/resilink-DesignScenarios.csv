@@ -1,4 +1,0 @@
-ID,name,tagline,totalMonthlyCost,unitLandedCost,avgDeliveryDays,riskExposure,resilienceScore,esgRating,carbonMetric,supplierConfig,plantConfig,warehouseConfig,routeConfig,recommended
-DSCN-01,Lowest Cost (Lean JIT),Single low-cost sourcing with minimal safety buffer,1340000.00,134.00,26,74,58.00,B,48 kg CO2e / unit,Supplier A (100%),Plant A (100%),Warehouse Y only,Route 1 Ocean,false
-DSCN-02,Highest Resilience (Fail-Safe),Multi-redundant high-buffer network with air express,2180000.00,218.00,8,14,98.00,AAA,210 kg CO2e / unit,Supplier B (60%) + Supplier C (40%),Plant A (40%) + Plant B (30%) + Plant C (30%),Warehouse X + Warehouse Y,Route 2 Air Express,false
-DSCN-03,Balanced Network (ResiLink Pareto),AI-optimized multi-echelon trade-off with dynamic backup,1640000.00,164.00,13,24,92.00,AA,78 kg CO2e / unit,Supplier B (75%) + Supplier C (25% backup),Plant A (60%) + Plant C (40%),Warehouse X + Warehouse Y,Route 3 Hybrid Fast Sea/Rail,true
