@@ -1,0 +1,5 @@
+ID;name;location;country;storageCapacity;currentStock;bufferCapacity;status;riskScore
+WH-ROT;Central European Logistics Hub;Rotterdam;NL;35000;28400;12000;CONNECTED;LOW
+WH-BOM;Nhava Sheva Consolidation Buffer;Mumbai;IN;25000;18200;8000;CONNECTED;MED
+WH-HAM;Hamburg North Sea Terminal;Hamburg;DE;30000;24500;10000;CONNECTED;LOW
+WH-FRA;Frankfurt Air Cargo Terminal;Frankfurt;DE;15000;11200;5000;BUFFER_RESERVE;LOW

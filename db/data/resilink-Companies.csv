@@ -1,0 +1,4 @@
+ID;name;code;city;country;industry;resilienceScore;status
+COMP-DE-900;Global AutoTech AG;COMP-DE-900;Munich;DE;Automotive & Clean Mobility;82.00;ACTIVE
+BAV-MUC-10;Bavaria EV Motors;BAV-MUC-10;Stuttgart;DE;Electric Vehicles;88.50;ACTIVE
+COMP-IN-101;Bharat Mobility Systems;COMP-IN-101;Pune;IN;Battery Tech;79.00;ACTIVE

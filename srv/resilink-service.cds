@@ -18,6 +18,18 @@ service ResilinkService @(path: '/odata/v4/resilink') {
   entity DesignScenarios as projection on db.DesignScenarios;
   entity AIRecommendations as projection on db.AIRecommendations;
 
+  // Canonical Operational Supply Chain Entities
+  entity Companies as projection on db.Companies;
+  entity Suppliers as projection on db.Suppliers;
+  entity Plants as projection on db.Plants;
+  entity Warehouses as projection on db.Warehouses;
+  entity Inventory as projection on db.Inventory;
+  entity Orders as projection on db.Orders;
+  entity Shipments as projection on db.Shipments;
+  entity Routes as projection on db.Routes;
+  entity CustomerMarkets as projection on db.CustomerMarkets;
+
+
   /**
    * Action: saveNetworkDesign
    * Commits the AI-optimized network design as operational baseline in SAP HANA Cloud

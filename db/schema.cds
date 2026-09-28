@@ -255,3 +255,152 @@ entity AIRecommendations : managed {
       tradeoffAnalysis     : LargeString;
 }
 
+/**
+ * ========================================================
+ * CANONICAL OPERATIONAL SUPPLY CHAIN DATABASE ENTITIES
+ * (Company, Supplier, Plant, Warehouse, Inventory, Orders, Shipment, Routes, Customer Markets)
+ * ========================================================
+ */
+
+/**
+ * Enterprise Organizations & Supply Chain Owners
+ */
+entity Companies : managed {
+  key ID              : String(32);
+      name            : String(100);
+      code            : String(50);
+      city            : String(100);
+      country         : String(10);
+      industry        : String(100);
+      resilienceScore : Decimal(5, 2);
+      status          : String(30); // ACTIVE, ONBOARDING
+}
+
+/**
+ * Global Tier-1 & Tier-2 Suppliers
+ */
+entity Suppliers : managed {
+  key ID               : String(32);
+      name             : String(100);
+      location         : String(100);
+      country          : String(10);
+      material         : String(100);
+      capacity         : Integer;
+      baselineCapacity : Integer default 100;
+      reliability      : Decimal(5, 2);
+      riskScore        : String(20);
+      leadTimeDays     : Integer;
+      unitCost         : Decimal(10, 2);
+      status           : String(30); // OPERATIONAL, DISRUPTED, BUFFER_AVAILABLE
+}
+
+/**
+ * Manufacturing & Assembly Plants
+ */
+entity Plants : managed {
+  key ID                 : String(32);
+      name               : String(100);
+      location           : String(100);
+      country            : String(10);
+      productionCapacity : Integer;
+      utilizationPct     : Decimal(5, 2);
+      leadTimeDays       : Integer;
+      riskScore          : String(20);
+      status             : String(30); // OPERATIONAL, BOTTLENECKED, SURGING
+}
+
+/**
+ * Regional Warehouses & Distribution Hubs
+ */
+entity Warehouses : managed {
+  key ID              : String(32);
+      name            : String(100);
+      location        : String(100);
+      country         : String(10);
+      storageCapacity : Integer;
+      currentStock    : Integer;
+      bufferCapacity  : Integer;
+      status          : String(30); // CONNECTED, HIGH_STOCK, BUFFER_RESERVE
+      riskScore       : String(20);
+}
+
+/**
+ * Real-time SKU Inventory Levels & Buffer Stock
+ */
+entity Inventory : managed {
+  key ID                 : String(32);
+      material           : String(100);
+      plantOrWarehouseId : String(32);
+      availableStock     : Integer;
+      reservedStock      : Integer;
+      safetyStock        : Integer;
+      reorderPoint       : Integer;
+      demandUnits        : Integer;
+      unit               : String(20);
+      status             : String(30); // AVAILABLE, LOW_STOCK, BUFFERED
+}
+
+/**
+ * Active Customer & OEM Orders
+ */
+entity Orders : managed {
+  key ID                    : String(32);
+      orderNumber           : String(50);
+      customerName          : String(100);
+      product               : String(100);
+      quantity              : Integer;
+      status                : String(30); // Completed, Pending, Delayed
+      promisedDate          : Date;
+      estimatedDeliveryDate : Date;
+      slaCompliance         : Decimal(5, 2);
+}
+
+/**
+ * In-Transit & Scheduled Freight Shipments
+ */
+entity Shipments : managed {
+  key ID             : String(32);
+      shipmentNumber : String(50);
+      originNode     : String(100);
+      destinationNode: String(100);
+      carrier        : String(100);
+      transportMode  : String(50);
+      status         : String(30); // Delivered, In Transit, Delayed
+      eta            : String(50);
+      trackingCode   : String(50);
+      delayRisk      : String(20);
+}
+
+/**
+ * Multimodal Transport Routes & Corridors
+ */
+entity Routes : managed {
+  key ID            : String(32);
+      name          : String(100);
+      origin        : String(100);
+      destination   : String(100);
+      transportMode : String(50);
+      transitDays   : Integer;
+      costIndex     : Decimal(10, 2);
+      carbonKg      : Decimal(8, 2);
+      reliability   : Decimal(5, 2);
+      riskScore     : String(20);
+      status        : String(30); // ACTIVE, REROUTED, CONGESTED
+}
+
+/**
+ * Target Customer Markets & Regional Demands
+ */
+entity CustomerMarkets : managed {
+  key ID                : String(32);
+      name              : String(100);
+      region            : String(50);
+      country           : String(10);
+      demandMonthly     : Integer;
+      targetSLA         : Integer;
+      slaPerformance    : Decimal(5, 2);
+      activeOrdersCount : Integer;
+      priority          : String(20);
+}
+
+
