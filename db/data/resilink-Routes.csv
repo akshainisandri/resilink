@@ -1,5 +1,0 @@
-ID,name,origin,destination,transportMode,transitDays,costIndex,carbonKg,reliability,riskScore,status
-RT-01,Suez Maritime Corridor,Chennai (INMAA),Rotterdam (NLRTM),Ocean Freight,24,100.00,42.50,86.20,HIGH,CONGESTED
-RT-02,Eurasian Rail Express,Katowice,Munich,Electric Rail,4,140.00,12.00,98.50,LOW,ACTIVE
-RT-03,Express Air Charter,Frankfurt,Munich,Air Cargo,1,320.00,88.00,99.50,VERY_LOW,ACTIVE
-RT-04,Baltic Coastal Feeder,Taoyuan,Rotterdam,Fast Sea+Rail,14,160.00,35.00,94.00,MED,ACTIVE

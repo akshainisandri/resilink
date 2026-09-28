@@ -1,5 +1,0 @@
-ID,shipmentNumber,originNode,destinationNode,carrier,transportMode,status,eta,trackingCode,delayRisk
-SHP-101,SAP-SHP-4011,Rotterdam Hub,Munich Gigafactory,DB Schenker Rail,Rail Freight,Delivered,2026-09-24,TRK-DB-9901,LOW
-SHP-102,SAP-SHP-4012,Nhava Sheva,Rotterdam Hub,Maersk Line,Ocean Freight,In Transit,2026-10-04,TRK-MSK-4421,HIGH
-SHP-103,SAP-SHP-4013,Frankfurt Air Cargo,Munich Gigafactory,Lufthansa Cargo,Air Express,Delivered,2026-09-27,TRK-LH-8422,LOW
-SHP-104,SAP-SHP-4014,Katowice Anodes,Wroclaw Pack Plant,Kuehne+Nagel,Road Freight,In Transit,2026-09-29,TRK-KN-1204,LOW

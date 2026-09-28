@@ -1,4 +1,0 @@
-ID,name,region,country,demandMonthly,targetSLA,slaPerformance,activeOrdersCount,priority
-MKT-01,Central European OEM Hub,Europe,DE,12000,14,98.50,840,HIGH
-MKT-02,Nordic Clean Mobility Fleet,Europe,SE,4000,10,96.00,220,MEDIUM
-MKT-03,Indian Domestic EV Market,Asia,IN,8000,7,94.20,180,HIGH
